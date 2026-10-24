@@ -119,9 +119,24 @@ def ingest(db, root, revision, source):
     old_count = db.execute("SELECT count(*) FROM lines").fetchone()[0]
     if old_count >= 100 and report["dialogue_lines"] < old_count * 0.8:
         raise ValueError("대사 수가 20% 이상 감소했습니다. 기존 데이터를 유지합니다.")
+    current_ids = {f"{lang}:{path}" for lang, path, _, _ in batch}
+    previous = list(db.execute("SELECT id,lang FROM stories WHERE source=?", (source,)))
+    incoming_languages = {lang for lang, _, _, _ in batch}
+    if {
+        row["lang"] for row in previous if row["id"] not in excluded
+    } - incoming_languages:
+        raise ValueError(
+            "기존 언어 자료가 통째로 누락되었습니다. 기존 데이터를 유지합니다."
+        )
+    retired = {row["id"] for row in previous} - current_ids - set(excluded)
+    report["retired_files"] = len(retired)
     with db:
-        # Retire old parser examples from search, retaining their archived source.
-        db.executemany("DELETE FROM lines WHERE story=?", ((sid,) for sid in excluded))
+        # Only the current inventory is searchable; immutable raw snapshots remain.
+        db.executemany(
+            "DELETE FROM lines WHERE story=?",
+            ((sid,) for sid in retired | set(excluded)),
+        )
+        db.executemany("DELETE FROM stories WHERE id=?", ((sid,) for sid in retired))
         for lang, path, raw, rows in batch:
             sid = f"{lang}:{path}"
             db.execute(
