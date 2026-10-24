@@ -1,0 +1,358 @@
+{
+  "revision": "db6f9ef8046ad17dbebe3ff1d0dd88844a5bc78c",
+  "scope": "command and attribute audit only; no waveform/transcription matching",
+  "languages": {
+    "cn": {
+      "files": 5674,
+      "text_commands": 390420,
+      "audio_commands": {
+        "stopmusic": 10471,
+        "playmusic": 8793,
+        "playsound": 41082,
+        "musicvolume": 1832,
+        "stopsound": 3661,
+        "soundvolume": 1635,
+        "video": 28,
+        "musicvolune": 1,
+        "palysound": 3,
+        "voicewithin": 78
+      },
+      "text_audio_attributes": {},
+      "examples": {
+        "stopmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {}
+        },
+        "playmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "intro": "$mist_intro",
+            "key": "$mist_loop",
+            "volume": "0.4"
+          }
+        },
+        "playsound": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "key": "$rungeneral",
+            "volume": "1",
+            "block": "false"
+          }
+        },
+        "musicvolume": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "volume": "0.2",
+            "fadetime": "1"
+          }
+        },
+        "stopsound": {
+          "path": "activities/act15d0/level_act15d0_08_end.txt",
+          "attributes": {
+            "channel": "bgs",
+            "fadetime": "1"
+          }
+        },
+        "soundvolume": {
+          "path": "activities/act43side/level_act43side_st03.txt",
+          "attributes": {
+            "volume": "0.2",
+            "channel": "cr",
+            "fadetime": "2"
+          }
+        },
+        "video": {
+          "path": "activities/act17side/level_act17side_entry.txt",
+          "attributes": {
+            "res": "video/act17side/SN01.mp4"
+          }
+        },
+        "musicvolune": {
+          "path": "activities/act16d5/level_act16d5_06_beg.txt",
+          "attributes": {
+            "volume": "0.4",
+            "fadetime": "1"
+          }
+        },
+        "palysound": {
+          "path": "activities/act18side/level_act18side_07_end.txt",
+          "attributes": {
+            "name": "d_avg_clothmovement",
+            "volume": "1"
+          }
+        },
+        "voicewithin": {
+          "path": "activities/act21side/task/text_sora_4_2_1.txt",
+          "attributes": {
+            "head": "npc_684_1",
+            "delay": "1"
+          }
+        }
+      }
+    },
+    "kr": {
+      "files": 5259,
+      "text_commands": 372350,
+      "audio_commands": {
+        "stopmusic": 9843,
+        "playmusic": 8291,
+        "playsound": 38654,
+        "musicvolume": 1813,
+        "stopsound": 3342,
+        "soundvolume": 1497,
+        "video": 27,
+        "musicvolune": 1,
+        "palysound": 3,
+        "voicewithin": 78
+      },
+      "text_audio_attributes": {},
+      "examples": {
+        "stopmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {}
+        },
+        "playmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "intro": "$mist_intro",
+            "key": "$mist_loop",
+            "volume": "0.4"
+          }
+        },
+        "playsound": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "key": "$rungeneral",
+            "volume": "1",
+            "block": "false"
+          }
+        },
+        "musicvolume": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "volume": "0.2",
+            "fadetime": "1"
+          }
+        },
+        "stopsound": {
+          "path": "activities/act15d0/level_act15d0_08_end.txt",
+          "attributes": {
+            "channel": "bgs",
+            "fadetime": "1"
+          }
+        },
+        "soundvolume": {
+          "path": "activities/act43side/level_act43side_st03.txt",
+          "attributes": {
+            "volume": "0.2",
+            "channel": "cr",
+            "fadetime": "2"
+          }
+        },
+        "video": {
+          "path": "activities/act17side/level_act17side_entry.txt",
+          "attributes": {
+            "res": "video/act17side/SN01.mp4"
+          }
+        },
+        "musicvolune": {
+          "path": "activities/act16d5/level_act16d5_06_beg.txt",
+          "attributes": {
+            "volume": "0.4",
+            "fadetime": "1"
+          }
+        },
+        "palysound": {
+          "path": "activities/act18side/level_act18side_07_end.txt",
+          "attributes": {
+            "name": "d_avg_clothmovement",
+            "volume": "1"
+          }
+        },
+        "voicewithin": {
+          "path": "activities/act21side/task/text_sora_4_2_1.txt",
+          "attributes": {
+            "head": "npc_684_1",
+            "delay": "1"
+          }
+        }
+      }
+    },
+    "jp": {
+      "files": 5259,
+      "text_commands": 372350,
+      "audio_commands": {
+        "stopmusic": 9843,
+        "playmusic": 8291,
+        "playsound": 38654,
+        "musicvolume": 1813,
+        "stopsound": 3342,
+        "soundvolume": 1497,
+        "video": 27,
+        "musicvolune": 1,
+        "palysound": 3,
+        "voicewithin": 78
+      },
+      "text_audio_attributes": {},
+      "examples": {
+        "stopmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {}
+        },
+        "playmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "intro": "$mist_intro",
+            "key": "$mist_loop",
+            "volume": "0.4"
+          }
+        },
+        "playsound": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "key": "$rungeneral",
+            "volume": "1",
+            "block": "false"
+          }
+        },
+        "musicvolume": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "volume": "0.2",
+            "fadetime": "1"
+          }
+        },
+        "stopsound": {
+          "path": "activities/act15d0/level_act15d0_08_end.txt",
+          "attributes": {
+            "channel": "bgs",
+            "fadetime": "1"
+          }
+        },
+        "soundvolume": {
+          "path": "activities/act43side/level_act43side_st03.txt",
+          "attributes": {
+            "volume": "0.2",
+            "channel": "cr",
+            "fadetime": "2"
+          }
+        },
+        "video": {
+          "path": "activities/act17side/level_act17side_entry.txt",
+          "attributes": {
+            "res": "video/act17side/SN01.mp4"
+          }
+        },
+        "musicvolune": {
+          "path": "activities/act16d5/level_act16d5_06_beg.txt",
+          "attributes": {
+            "volume": "0.4",
+            "fadetime": "1"
+          }
+        },
+        "palysound": {
+          "path": "activities/act18side/level_act18side_07_end.txt",
+          "attributes": {
+            "name": "d_avg_clothmovement",
+            "volume": "1"
+          }
+        },
+        "voicewithin": {
+          "path": "activities/act21side/task/text_sora_4_2_1.txt",
+          "attributes": {
+            "head": "npc_684_1",
+            "delay": "1"
+          }
+        }
+      }
+    },
+    "en": {
+      "files": 5259,
+      "text_commands": 372350,
+      "audio_commands": {
+        "stopmusic": 9843,
+        "playmusic": 8291,
+        "playsound": 38654,
+        "musicvolume": 1813,
+        "stopsound": 3342,
+        "soundvolume": 1497,
+        "video": 27,
+        "musicvolune": 1,
+        "palysound": 3,
+        "voicewithin": 78
+      },
+      "text_audio_attributes": {},
+      "examples": {
+        "stopmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {}
+        },
+        "playmusic": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "intro": "$mist_intro",
+            "key": "$mist_loop",
+            "volume": "0.4"
+          }
+        },
+        "playsound": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "key": "$rungeneral",
+            "volume": "1",
+            "block": "false"
+          }
+        },
+        "musicvolume": {
+          "path": "activities/act15d0/level_act15d0_08_beg.txt",
+          "attributes": {
+            "volume": "0.2",
+            "fadetime": "1"
+          }
+        },
+        "stopsound": {
+          "path": "activities/act15d0/level_act15d0_08_end.txt",
+          "attributes": {
+            "channel": "bgs",
+            "fadetime": "1"
+          }
+        },
+        "soundvolume": {
+          "path": "activities/act43side/level_act43side_st03.txt",
+          "attributes": {
+            "volume": "0.2",
+            "channel": "cr",
+            "fadetime": "2"
+          }
+        },
+        "video": {
+          "path": "activities/act17side/level_act17side_entry.txt",
+          "attributes": {
+            "res": "video/act17side/SN01.mp4"
+          }
+        },
+        "musicvolune": {
+          "path": "activities/act16d5/level_act16d5_06_beg.txt",
+          "attributes": {
+            "volume": "0.4",
+            "fadetime": "1"
+          }
+        },
+        "palysound": {
+          "path": "activities/act18side/level_act18side_07_end.txt",
+          "attributes": {
+            "name": "d_avg_clothmovement",
+            "volume": "1"
+          }
+        },
+        "voicewithin": {
+          "path": "activities/act21side/task/text_sora_4_2_1.txt",
+          "attributes": {
+            "head": "npc_684_1",
+            "delay": "1"
+          }
+        }
+      }
+    }
+  }
+}

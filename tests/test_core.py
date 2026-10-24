@@ -69,4 +69,25 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(search(self.db,target='시험 대상')['total'],1)
         self.assertEqual(search(self.db,target='없는 인물')['total'],0)
 
+
+    def test_removed_story_is_retired_but_raw_history_is_kept(self):
+        removed=self.path.parent/'retired.txt'
+        removed.write_text('[name="시험 화자"]삭제될 시험 대사',encoding='utf8')
+        ingest(self.db,self.root,'v2','test/source')
+        story='ko_KR:retired.txt'
+        self.assertEqual(search(self.db,query='삭제될')['total'],1)
+        removed.unlink()
+        ingest(self.db,self.root,'v3','test/source')
+        self.assertEqual(search(self.db,query='삭제될')['total'],0)
+        self.assertEqual(self.db.execute('SELECT count(*) FROM stories WHERE id=?',(story,)).fetchone()[0],0)
+        self.assertEqual(self.db.execute('SELECT count(*) FROM snapshots WHERE story=? AND revision=?',(story,'v2')).fetchone()[0],1)
+
+    def test_missing_language_does_not_retire_previous_data(self):
+        other=self.root/'cn/gamedata/story/other.txt';other.parent.mkdir(parents=True)
+        other.write_text('[name="甲"]synthetic line',encoding='utf8')
+        ingest(self.db,self.root,'v2','test/source');other.unlink()
+        with self.assertRaises(ValueError):ingest(self.db,self.root,'v3','test/source')
+        self.assertEqual(self.db.execute("SELECT revision FROM stories WHERE lang='zh_CN'").fetchone()[0],'v2')
+        self.assertEqual(self.db.execute("SELECT count(*) FROM lines").fetchone()[0],3)
+
 if __name__=='__main__':unittest.main()
