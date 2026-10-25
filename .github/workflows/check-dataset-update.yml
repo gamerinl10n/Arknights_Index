@@ -33,6 +33,15 @@ jobs:
           candidate=$(gh api repos/ArknightsAssets/ArknightsGamedata/commits/master --jq .sha)
           current=$(python -c 'import json; print(json.load(open("dataset-source.json"))["revision"])')
           [[ "$candidate" =~ ^[0-9a-f]{40}$ ]]
+          # A previously proposed revision needs no repeated full dataset build.
+          # PR validation still runs even when an automation PR already exists.
+          if [ "${{ github.event_name }}" != 'pull_request' ] && [ "$candidate" != "$current" ]; then
+            existing=$(gh pr list --head "automation/dataset-${candidate}" --state all --json number --jq 'length')
+            if [ "$existing" -gt 0 ]; then
+              echo 'A PR for this source revision already exists; skipping repeated validation.'
+              exit 0
+            fi
+          fi
           echo "revision=$candidate" >> "$GITHUB_OUTPUT"
           if [ "$candidate" != "$current" ]; then echo 'changed=true' >> "$GITHUB_OUTPUT"; fi
       - if: steps.upstream.outputs.changed == 'true'
