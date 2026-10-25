@@ -9,6 +9,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 import zipfile
 
+# Runtime-only search_service.py consumes snapshots; it does not build them.
 INPUTS = (
     "dataset-source.json",
     "core.py",
@@ -20,7 +21,6 @@ INPUTS = (
     "portraits.source.json",
     "requirements.txt",
     "search_queries.py",
-    "search_service.py",
     "translation_alignment.py",
 )
 RELEASES = "https://github.com/gamerinl10n/Arknights_Index/releases/download"
