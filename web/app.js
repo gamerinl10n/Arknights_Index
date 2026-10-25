@@ -120,7 +120,7 @@ async function run(append = false) {
       ...search,
       targetNames: data.highlights || {},
     });
-    comparisonControl.refresh();
+    // The comparison observer applies visibility only to newly attached rows.
     offset += data.items.length;
     renderedKey = searchIdentity(search);
     $("more").hidden = offset >= data.total;
