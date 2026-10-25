@@ -437,3 +437,17 @@ test('expanding a full 201-line context creates each unchanged line only once',a
   const rows=[...panel.querySelectorAll('.context-line')];assert.match(rows[0].textContent,/synthetic context 0$/);assert.match(rows.at(-1).textContent,/synthetic context 200$/);
  }finally{x.dom.window.close();}
 });
+
+test('loading another result page updates only new language rows',async()=>{
+ const item={...exampleItem,context:undefined,variants:{ko_KR:exampleItem,zh_CN:{...exampleItem,lang:'zh_CN',text:'synthetic Chinese'}}};
+ const x=await setup({search:url=>({total:2,items:[{...item,story:String(url).includes('offset=1')?'ko_KR:second.txt':item.story}]})});
+ try {
+  x.w.document.querySelector('[data-translation-lang="zh_CN"]').click();enter(x);await tick();await tick();
+  const root=x.$('results'),original=root.querySelectorAll.bind(root);let scans=0;
+  root.querySelectorAll=selector=>{if(selector==='[data-variant-lang]')scans++;return original(selector);};
+  x.$('more').click();await tick();await tick();
+  assert.equal(root.querySelectorAll('.result-card').length,2);assert.equal(scans,0);
+  assert.equal([...root.querySelectorAll('[data-variant-lang="zh_CN"]')].filter(row=>!row.hidden).length,2);
+  assert.equal(x.$('more').hidden,true);
+ }finally{x.dom.window.close();}
+});

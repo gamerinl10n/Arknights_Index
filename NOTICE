@@ -16,8 +16,9 @@ installed packages. Python is under the PSF license; SQLite is public domain.
 Pillow and its dependencies retain their package licenses.
 NEXON Lv2 Gothic Regular/Bold: copyright NEXON. Original, unmodified files
 from L10ndiff; terms in web/fonts/NEXON-Lv2-Gothic.txt.
-Japanese and Chinese glyphs use device fonts. No analytics, advertising or
-feedback form scripts are bundled in this application.
+Japanese and Chinese glyphs use device fonts. Google Analytics and AdSense
+are enabled on the production domains; see the service privacy notice.
+Feedback uses an external link without an embedded form script.
 
 Update monitor, notification banner styles, and question-mark icon adapted from gamerinl10n/l10ndiff on the same owner’s request. Character display names are joined by official game IDs; see characters.source.json for provenance.
 
