@@ -14,7 +14,6 @@ on:
       - 'portraits.source.json'
       - 'requirements.txt'
       - 'search_queries.py'
-      - 'search_service.py'
       - 'translation_alignment.py'
       - 'scripts/verify_alignment_snapshot.py'
       - '.github/workflows/dataset.yml'

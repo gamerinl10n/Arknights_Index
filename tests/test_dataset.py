@@ -69,3 +69,57 @@ class DatasetTest(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     restore(bundle, root)
                 self.assertEqual(data.read_bytes(), b"preserve")
+
+    def test_runtime_service_changes_preserve_fingerprint(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for name in INPUTS:
+                (root / name).write_text("synthetic build input", encoding="utf8")
+            for name in (
+                "generated/search.sqlite.gz",
+                "characters.json",
+                "characters.source.json",
+                "generated/portraits/index.json",
+            ):
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"synthetic bundle member")
+            bundle = root / "bundle.zip"
+            pack(root, bundle)
+            before = fingerprint(root)
+            service = root / "search_service.py"
+            service.write_text("synthetic runtime service", encoding="utf8")
+            self.assertEqual(fingerprint(root), before)
+            service.write_text("changed runtime service", encoding="utf8")
+            self.assertEqual(fingerprint(root), before)
+            data = root / "generated/search.sqlite.gz"
+            data.write_bytes(b"old")
+            restore(bundle, root)
+            self.assertEqual(data.read_bytes(), b"synthetic bundle member")
+
+    def test_snapshot_build_inputs_still_invalidate_fingerprint(self):
+        build_inputs = (
+            "dataset-source.json",
+            "core.py",
+            "catalog.py",
+            "character_catalog.py",
+            "build.py",
+            "build_portraits.py",
+            "dataset.py",
+            "portraits.source.json",
+            "requirements.txt",
+            "search_queries.py",
+            "translation_alignment.py",
+        )
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for name in build_inputs:
+                (root / name).write_text("synthetic build input", encoding="utf8")
+            before = fingerprint(root)
+            for name in build_inputs:
+                with self.subTest(input=name):
+                    path = root / name
+                    path.write_text("changed build input", encoding="utf8")
+                    self.assertNotEqual(fingerprint(root), before)
+                    path.write_text("synthetic build input", encoding="utf8")
+                    self.assertEqual(fingerprint(root), before)
