@@ -77,7 +77,21 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add dataset-source.json
           git commit -m "Update dataset source to $CANDIDATE_REVISION"
-          git push origin "$branch"
+          # A previous run can push successfully but fail before opening its PR.
+          # Reuse that branch only when its complete PR diff is the same pin.
+          remote=$(git ls-remote --heads origin "refs/heads/$branch")
+          if [ -n "$remote" ]; then
+            git fetch origin "$branch"
+            git show FETCH_HEAD:dataset-source.json > remote-dataset-source.json
+            cmp dataset-source.json remote-dataset-source.json
+            changed=$(gh api "repos/${GITHUB_REPOSITORY}/compare/master...${branch}" --jq '.files[].filename')
+            if [ "$changed" != 'dataset-source.json' ]; then
+              echo 'Existing update branch contains unexpected changes; refusing to reuse it.'
+              exit 1
+            fi
+          else
+            git push origin "$branch"
+          fi
           python -c 'import json; from pathlib import Path; r=json.load(open("generated/update-validation.json")); rows=["Update the pinned game data source to `"+r["revision"]+"`.","", "Passed full archive/correspondence verification, snapshot integrity and size checks, and per-language missing-file/count guards.", "", "| Language | Previous lines | Candidate lines | Added files |", "| --- | ---: | ---: | ---: |"] ; rows += ["| {} | {} | {} | {} |".format(k,v["previous_lines"],v["candidate_lines"],v["added_files"]) for k,v in r["languages"].items()]; rows += ["", "Structural correspondence checks do not guarantee semantic translation accuracy. No automatic merge. The current production source remains pinned until this PR is merged."]; Path("update-pr-body.txt").write_text("\n".join(rows)+"\n")'
           gh pr create --base master --head "$branch" --title "Update game data source" --body-file update-pr-body.txt
       - name: Save validation reports
