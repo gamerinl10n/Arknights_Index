@@ -120,6 +120,21 @@ class UnifiedSearchTest(unittest.TestCase):
         self.assertEqual({row["lang"] for row in result["items"]}, {"zh_CN", "ja_JP"})
         self.assertTrue(all(row["main_language_missing"] for row in result["items"]))
 
+    def test_unaligned_pages_preserve_path_ordinal_and_language_order(self):
+        with closing(connect(self.snapshot)) as db:
+            db.execute("DROP TABLE translation_alignments")
+            db.commit()
+        rows = []
+        for offset in range(0, 244, 50):
+            result = self.find(q="synthetic", offset=str(offset)).json
+            self.assertEqual(result["total"], 244)
+            rows.extend(result["items"])
+        keys = [(row["path"], row["ordinal"], row["lang"]) for row in rows]
+        self.assertEqual(len(keys), 244)
+        self.assertEqual(len(set(keys)), 244)
+        self.assertEqual(keys, sorted(keys))
+        self.assertEqual(self.find(q="synthetic", offset="244").json["items"], [])
+
     def test_name_highlights_use_the_same_localized_aliases_as_search(self):
         result = self.find(speaker="아미야", target="凯尔希").json
         self.assertIn("켈시", result["highlights"]["ko_KR"])
