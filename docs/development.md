@@ -17,7 +17,7 @@ node --check web/chrome.js
 node --check web/update-banner.mjs
 node --check web/update-monitor.mjs
 npm run format:check
-python -m black --check app.py core.py catalog.py search_queries.py search_service.py build.py runtime_snapshot.py scripts/benchmark.py
+python -m black --check app.py discovery.py core.py catalog.py search_queries.py search_service.py build.py runtime_snapshot.py scripts/benchmark.py
 git diff --check
 ```
 
@@ -51,6 +51,12 @@ VERCEL=1 python app.py
 배포 번들에는 `generated/search.sqlite.gz`와 `generated/portraits/`를 포함하고 원본 SQLite·아카이브는 제외합니다. 런타임은 파일 잠금으로 중복 압축 해제를 막고 `/tmp`에 한 번 풀어 immutable 읽기 전용으로 엽니다. 이 파일은 재생성 가능한 임시 캐시입니다.
 
 2026-10-22 검증본은 1,433,397개 대사, SQLite 약 419MiB, gzip 약 141MiB입니다. 압축 전 DB가 450MiB를 넘으면 빌드를 중단합니다. 최종 Function 번들 크기는 의존성을 포함해 배포에서 확인합니다.
+
+## 검색 엔진 탐색
+
+`/robots.txt`는 공개 크롤링을 허용하고 `https://www.arknightsindex.com/sitemap.xml`을 안내합니다. 사이트맵은 검색 DB 없이 제공하며, 홈과 사용 방법의 네 언어 진입점 및 한국어·영어 병기 안내 문서만 포함합니다. 한국어 기본 주소는 `ui=ko`를 생략하고, 병기 문서는 UI 언어별로 중복 등록하지 않습니다. 검색 결과·API·검색 조건·추적 매개변수는 사이트맵에 넣지 않습니다.
+
+공개 페이지의 canonical도 `discovery.py`의 같은 허용 목록과 고정 운영 origin을 사용합니다. Host/Forwarded 헤더나 미리보기 도메인에서 URL을 만들지 않으며, `/search`와 검색 조건이 있는 홈에는 빈 홈을 가리키는 canonical을 넣지 않습니다. robots.txt는 접근 제어 또는 검색 결과의 색인 제거 수단이 아닙니다. 기존 보안 헤더·nonce·캐시 정책과 검색 URL 동작은 유지합니다. 배포 후 운영 사이트의 robots.txt, 사이트맵, 모든 등록 URL의 200 응답을 확인한 뒤 Search Console에 사이트맵을 제출합니다. 미리보기 검증은 운영 배포 확인을 대신하지 않습니다.
 
 ## 주요 API
 

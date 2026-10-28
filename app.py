@@ -28,6 +28,7 @@ from catalog import aliases
 from search_service import SearchService
 from translation_alignment import attach_comparisons, TARGET_LANGS
 from multilingual_search import search_all, variants
+from discovery import ROBOTS_TXT, canonical_url, sitemap_xml
 
 ROOT = Path(__file__).resolve().parent
 
@@ -65,12 +66,26 @@ def create_app(database=None, readonly=None, portrait_root=None):
     def ads_txt():
         return send_file(ROOT / "web/ads.txt", mimetype="text/plain")
 
+    @app.route("/robots.txt")
+    def robots_txt():
+        return app.response_class(ROBOTS_TXT, mimetype="text/plain")
+
+    @app.route("/sitemap.xml")
+    def sitemap():
+        return app.response_class(sitemap_xml(), mimetype="application/xml")
+
     @app.context_processor
     def template_context():
         ui = request.args.get("ui", "ko")
         if ui not in UI_LANGS:
             ui = "ko"
         return dict(
+            canonical_url=(
+                None
+                if request.endpoint == "home"
+                and any(request.args.get(key) for key in ("speaker", "target", "q"))
+                else canonical_url(request.path, ui)
+            ),
             csp_nonce=g.csp_nonce,
             adsense_enabled=request.host.split(":", 1)[0]
             in ("arknightsindex.com", "www.arknightsindex.com"),
