@@ -191,10 +191,15 @@ def search_all(
             ],
         )
     total = db.execute("SELECT count(*) FROM multilingual_hits").fetchone()[0]
+    # Select the page before reading dialogue bodies; keep the final order explicit.
     rows = db.execute(
-        """SELECT l.*,s.lang,s.path,s.revision,s.source,h.rank AS nearby_turns
-        FROM multilingual_hits h JOIN lines l ON l.story=h.story AND l.ordinal=h.ordinal
-        JOIN stories s ON s.id=l.story ORDER BY h.rank DESC,s.path,l.ordinal,s.lang LIMIT 50 OFFSET ?""",
+        """SELECT l.*,s.lang,s.path,s.revision,s.source,s.rank AS nearby_turns
+        FROM (
+            SELECT h.story,h.ordinal,h.rank,s.lang,s.path,s.revision,s.source
+            FROM multilingual_hits h JOIN stories s ON s.id=h.story
+            ORDER BY h.rank DESC,s.path,h.ordinal,s.lang LIMIT 50 OFFSET ?
+        ) s JOIN lines l ON l.story=s.story AND l.ordinal=s.ordinal
+        ORDER BY s.rank DESC,s.path,l.ordinal,s.lang""",
         (offset,),
     )
     items = [dict(row) for row in rows]
