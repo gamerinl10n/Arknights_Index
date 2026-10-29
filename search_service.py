@@ -20,6 +20,8 @@ class SearchService:
         )
         # Cache public suggestions only. Search terms and results are never cached here.
         self._cached_suggestions = lru_cache(maxsize=8)(self._suggestions)
+        # The process catalog is immutable; database counts remain live for mutable archives.
+        self._lookup_keys = {}
 
     def open_db(self):
         if not self.readonly:
@@ -66,27 +68,36 @@ class SearchService:
             if not count:
                 continue
             # Show only names in this corpus; other languages are lookup keys.
-            lookup = sorted(
-                {
-                    value
-                    for value in [
-                        character["id"],
-                        *character.get("aliases", []),
-                        *(
-                            name
-                            for group in character["names"].values()
-                            for name in group
-                        ),
-                    ]
-                    if character_id(value) == character["id"]
-                }
-            )
+            lookup = self._lookup_for(character)
             for name in names:
                 if name in result and character_id(name) == character["id"]:
                     result[name]["lookup"] = lookup
         return self.portraits.annotate(
             sorted(result.values(), key=lambda row: row["value"])
         )
+
+    def _lookup_for(self, character):
+        identifier = character["id"]
+        if identifier not in self._lookup_keys:
+            self._lookup_keys[identifier] = tuple(
+                sorted(
+                    {
+                        value
+                        for value in [
+                            identifier,
+                            *character.get("aliases", []),
+                            *(
+                                name
+                                for group in character["names"].values()
+                                for name in group
+                            ),
+                        ]
+                        if character_id(value) == identifier
+                    }
+                )
+            )
+        # Each response owns its list; clients cannot mutate the cached lookup keys.
+        return list(self._lookup_keys[identifier])
 
     def status(self):
         with closing(self.open_db()) as db:
