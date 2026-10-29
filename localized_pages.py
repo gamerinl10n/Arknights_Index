@@ -78,7 +78,7 @@ COPY = {
             ),
             (
                 'Advertising',
-                'Google AdSense is used. Google and advertising partners may process cookies, IP addresses and browser/device information to serve and measure ads and prevent invalid traffic. Personalization and consent depend on AdSense settings and the visitor’s region. Personalized ads can be managed in Google Ad Settings.',
+                'Google AdSense ad code is included only in the user guide, not in search screens, search results or service notices. Google and other third-party vendors may use cookies to serve ads based on your prior visits to this website or other websites. Google advertising cookies enable Google and its partners to serve ads based on visits to this site and other sites on the Internet. IP addresses and browser/device information may also be processed to serve and measure ads and prevent invalid traffic. Personalization and consent depend on AdSense settings and your region. You can opt out of personalized advertising using Google Ads Settings below, or opt out of some third-party vendors’ personalized advertising cookies through AboutAds.',
             ),
             (
                 "External services",
@@ -372,10 +372,18 @@ for language, sections in HELP_EXAMPLES.items():
         COPY[language]["help"].extend(sections)
 
 
+PRIVACY_LINKS = {
+    "ko": [("Google 광고 설정", "https://www.google.com/settings/ads"), ("AboutAds 개인화 광고 선택", "https://www.aboutads.info/choices/"), ("Google의 파트너 사이트 데이터 사용", "https://policies.google.com/technologies/partner-sites")],
+    "en": [("Google Ads Settings", "https://www.google.com/settings/ads"), ("AboutAds advertising choices", "https://www.aboutads.info/choices/"), ("How Google uses data from partner sites", "https://policies.google.com/technologies/partner-sites")],
+}
+
+
 def get_page(page, ui):
+    links = PRIVACY_LINKS.get(ui, PRIVACY_LINKS["en"]) if page == "privacy" else []
     if ui == "ko":
-        return PAGES[page]
+        return {**PAGES[page], "links": links}
     return {
+        "links": links,
         "title": tr(ui, page),
         "subtitle": "",
         "sections": [

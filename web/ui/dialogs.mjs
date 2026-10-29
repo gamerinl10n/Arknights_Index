@@ -33,7 +33,20 @@ export function initDialogs() {
   });
   const help = document.getElementById("help-dialog"),
     button = document.getElementById("help-button");
-  button.addEventListener("click", () => openDialog(help, button));
+  button.addEventListener("click", (event) => {
+    // Keep native link behavior for new tabs and browsers without dialogs.
+    if (
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey ||
+      typeof help.showModal !== "function"
+    )
+      return;
+    event.preventDefault();
+    openDialog(help, button);
+  });
   if (new URLSearchParams(location.search).get("help") === "1")
     openDialog(help, button);
 }

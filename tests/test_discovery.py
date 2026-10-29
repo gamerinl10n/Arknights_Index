@@ -133,3 +133,64 @@ class DiscoveryTest(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(HeadLinks(response.text).canonicals, [])
         self.assertEqual(self.client.get("/missing-page").status_code, 404)
+
+    def test_ad_script_only_on_original_guide_and_verification_on_public_pages(self):
+        publisher = (
+            '<meta name="google-adsense-account" content="ca-pub-6317702529934048">'
+        )
+        script = "adsbygoogle.js?client=ca-pub-6317702529934048"
+        for host in (
+            ORIGIN,
+            "https://arknightsindex.com",
+            "https://preview.vercel.app",
+            "http://localhost",
+        ):
+            production = host in (ORIGIN, "https://arknightsindex.com")
+            for ui in UI_LANGS:
+                for path in (
+                    "/",
+                    "/search",
+                    "/help",
+                    "/privacy",
+                    "/terms",
+                    "/license",
+                    "/changelog",
+                ):
+                    for query in (
+                        "",
+                        "&q=sample&speaker=M3&target=Kaltsit",
+                        "&q=sample&view=home",
+                    ):
+                        with self.subTest(host=host, ui=ui, path=path, query=query):
+                            response = self.client.get(
+                                path + "?ui=" + ui + query, base_url=host
+                            )
+                            self.assertEqual(response.status_code, 200)
+                            self.assertEqual(publisher in response.text, production)
+                            self.assertEqual(
+                                script in response.text, production and path == "/help"
+                            )
+                            self.assertIn(
+                                f'href="/help?ui={ui}" id="help-button"', response.text
+                            )
+                            self.assertNotIn(
+                                'href="/help',
+                                response.text.split("<footer")[1].split("</footer>")[0],
+                            )
+        for path in ("/missing", "/robots.txt", "/sitemap.xml", "/ads.txt"):
+            self.assertNotIn(script, self.client.get(path, base_url=ORIGIN).text)
+
+    def test_bilingual_privacy_discloses_advertising_and_links_real_choices(self):
+        for ui in UI_LANGS:
+            response = self.client.get("/privacy?ui=" + ui)
+            self.assertIn("이전 방문", response.text)
+            self.assertIn(
+                "prior visits to this website or other websites", response.text
+            )
+            self.assertIn("검색 화면·검색 결과·서비스 안내", response.text)
+            for url in (
+                "https://www.google.com/settings/ads",
+                "https://www.aboutads.info/choices/",
+                "https://policies.google.com/technologies/partner-sites",
+            ):
+                self.assertEqual(response.text.count('href="' + url + '"'), 2)

@@ -89,6 +89,9 @@ def create_app(database=None, readonly=None, portrait_root=None):
             csp_nonce=g.csp_nonce,
             adsense_enabled=request.host.split(":", 1)[0]
             in ("arknightsindex.com", "www.arknightsindex.com"),
+            # Search shells/results and service notices are not ad inventory.
+            adsense_content_page=request.endpoint == "document"
+            and request.view_args.get("page") == "help",
             ui=ui,
             t=lambda key: tr(ui, key),
             ui_languages=UI_LANGS,
