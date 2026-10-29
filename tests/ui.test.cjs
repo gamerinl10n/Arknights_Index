@@ -451,3 +451,17 @@ test('loading another result page updates only new language rows',async()=>{
   assert.equal(x.$('more').hidden,true);
  }finally{x.dom.window.close();}
 });
+
+
+test('guide link retains fallback and modified-click navigation',async()=>{
+ const x=await setup();try{
+  const help=x.$('help-button');assert.equal(help.tagName,'A');assert.equal(help.getAttribute('href'),'/help?ui=ko');
+  for (const modifiers of [{ctrlKey:true},{metaKey:true},{shiftKey:true},{altKey:true},{button:1}]) {
+    const event=new x.w.MouseEvent('click',{bubbles:true,cancelable:true,...modifiers});
+    help.dispatchEvent(event);assert.equal(event.defaultPrevented,false);assert.equal(x.$('help-dialog').open,false);
+  }
+  x.$('help-dialog').showModal=undefined;
+  const event=new x.w.MouseEvent('click',{bubbles:true,cancelable:true});help.dispatchEvent(event);
+  assert.equal(event.defaultPrevented,false);assert.equal(x.$('help-dialog').open,false);
+ }finally{x.dom.window.close();}
+});

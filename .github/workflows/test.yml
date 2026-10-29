@@ -32,4 +32,4 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run format:check
-      - run: python -m black --check app.py core.py catalog.py search_queries.py search_service.py build.py build_portraits.py portraits.py runtime_snapshot.py scripts/benchmark.py dataset.py translation_alignment.py multilingual_search.py scripts/audit_alignment.py scripts/verify_alignment_snapshot.py
+      - run: python -m black --check app.py discovery.py core.py catalog.py search_queries.py search_service.py build.py build_portraits.py portraits.py runtime_snapshot.py scripts/benchmark.py dataset.py translation_alignment.py multilingual_search.py scripts/audit_alignment.py scripts/verify_alignment_snapshot.py

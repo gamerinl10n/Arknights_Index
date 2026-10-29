@@ -136,7 +136,7 @@ class DeploymentTest(unittest.TestCase):
             self.assertEqual(response.text, 'google.com, pub-6317702529934048, DIRECT, f08c47fec0942fa0\n')
         self.assertNotIn('adsbygoogle.js', self.client.get('/').text)
         nonces = []
-        for page in ('/', '/search', '/privacy'):
+        for page in ('/help', '/help?ui=en', '/help?ui=ja'):
             response = self.client.get(page, base_url='https://www.arknightsindex.com')
             self.assertEqual(response.text.count('adsbygoogle.js?client=ca-pub-6317702529934048'), 1)
             nonce = re.search(r"'nonce-([^']+)'", response.headers['Content-Security-Policy']).group(1)
