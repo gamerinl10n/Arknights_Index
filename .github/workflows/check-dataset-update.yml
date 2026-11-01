@@ -8,6 +8,8 @@ on:
       - .github/workflows/check-dataset-update.yml
       - scripts/check_dataset_update.py
       - tests/test_dataset_update.py
+      - scripts/open_dataset_pr.sh
+      - tests/test_dataset_pr.py
 permissions:
   contents: read
 concurrency:
@@ -93,7 +95,7 @@ jobs:
             git push origin "$branch"
           fi
           python -c 'import json; from pathlib import Path; r=json.load(open("generated/update-validation.json")); rows=["Update the pinned game data source to `"+r["revision"]+"`.","", "Passed full archive/correspondence verification, snapshot integrity and size checks, and per-language missing-file/count guards.", "", "| Language | Previous lines | Candidate lines | Added files |", "| --- | ---: | ---: | ---: |"] ; rows += ["| {} | {} | {} | {} |".format(k,v["previous_lines"],v["candidate_lines"],v["added_files"]) for k,v in r["languages"].items()]; rows += ["", "Structural correspondence checks do not guarantee semantic translation accuracy. No automatic merge. The current production source remains pinned until this PR is merged."]; Path("update-pr-body.txt").write_text("\n".join(rows)+"\n")'
-          gh pr create --base master --head "$branch" --title "Update game data source" --body-file update-pr-body.txt
+          bash scripts/open_dataset_pr.sh "$branch" update-pr-body.txt
       - name: Save validation reports
         if: always() && steps.upstream.outputs.changed == 'true'
         uses: actions/upload-artifact@v4
@@ -102,5 +104,6 @@ jobs:
           path: |
             generated/update-validation.json
             generated/alignment-validation.json
+            update-pr-body.txt
           if-no-files-found: ignore
           retention-days: 14
