@@ -32,6 +32,16 @@ def build_suggestion_counts(db):
     )
 
 
+def pack_hash(value):
+    """Accept only the canonical SHA-256 format emitted by the importer."""
+    if value is None:
+        return None
+    packed = bytes.fromhex(value)
+    if len(packed) != 32 or packed.hex() != value:
+        raise ValueError("Noncanonical dialogue hash")
+    return packed
+
+
 def export_snapshot(source, output):
     source, output = Path(source).resolve(), Path(output).resolve()
     if source == output:
@@ -44,11 +54,20 @@ def export_snapshot(source, output):
             closing(sqlite3.connect(source.as_uri() + "?mode=ro", uri=True)) as src,
             closing(sqlite3.connect(temporary)) as dst,
         ):
-            # Retain exact schema/indices used by core.search, but not raw archives.
+            # Keep the public columns and lookup indices, but not raw archives.
+            # SHA-256 hex is reversible: store 32 bytes, expose the original text.
             dst.executescript(
                 """
             CREATE TABLE stories(id TEXT PRIMARY KEY,lang TEXT,path TEXT,revision TEXT,source TEXT);
-            CREATE TABLE lines(id TEXT GENERATED ALWAYS AS (story || ':' || ordinal) VIRTUAL,story TEXT,ordinal INTEGER,speaker TEXT,text TEXT,branch TEXT,hash TEXT);
+            CREATE TABLE lines(
+                id TEXT GENERATED ALWAYS AS (story || ':' || ordinal) VIRTUAL,
+                story TEXT,ordinal INTEGER,speaker TEXT,text TEXT,branch TEXT,
+                hash TEXT GENERATED ALWAYS AS (
+                    CASE WHEN hash_bytes IS NULL THEN NULL
+                    ELSE lower(hex(hash_bytes)) END
+                ) VIRTUAL,
+                hash_bytes BLOB CHECK(hash_bytes IS NULL OR length(hash_bytes)=32)
+            );
             CREATE TABLE import_status(id INTEGER PRIMARY KEY,payload TEXT);
             """
             )
@@ -57,8 +76,13 @@ def export_snapshot(source, output):
                 src.execute("SELECT id,lang,path,revision,source FROM stories"),
             )
             dst.executemany(
-                "INSERT INTO lines(story,ordinal,speaker,text,branch,hash) VALUES(?,?,?,?,?,?)",
-                src.execute("SELECT story,ordinal,speaker,text,branch,hash FROM lines"),
+                "INSERT INTO lines(story,ordinal,speaker,text,branch,hash_bytes) VALUES(?,?,?,?,?,?)",
+                (
+                    (*row[:5], pack_hash(row[5]))
+                    for row in src.execute(
+                        "SELECT story,ordinal,speaker,text,branch,hash FROM lines"
+                    )
+                ),
             )
             dst.executemany(
                 "INSERT INTO import_status VALUES(?,?)",

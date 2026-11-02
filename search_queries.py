@@ -85,7 +85,7 @@ def search(
             rank_args.extend(target_names)
         rank_sql = " + ".join(turns)
     rows = db.execute(
-        f"SELECT l.*,s.lang,s.path,s.revision,s.source,({rank_sql}) AS nearby_turns FROM lines l JOIN stories s ON s.id=l.story WHERE {where} ORDER BY nearby_turns DESC,s.path,l.ordinal LIMIT 50 OFFSET ?",
+        f"SELECT l.id,l.story,l.ordinal,l.speaker,l.text,l.branch,l.hash,s.lang,s.path,s.revision,s.source,({rank_sql}) AS nearby_turns FROM lines l JOIN stories s ON s.id=l.story WHERE {where} ORDER BY nearby_turns DESC,s.path,l.ordinal LIMIT 50 OFFSET ?",
         rank_args + args + [page_offset],
     ).fetchall()
     results = []

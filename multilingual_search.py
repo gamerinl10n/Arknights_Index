@@ -193,7 +193,7 @@ def search_all(
     total = db.execute("SELECT count(*) FROM multilingual_hits").fetchone()[0]
     # Select the page before reading dialogue bodies; keep the final order explicit.
     rows = db.execute(
-        """SELECT l.*,s.lang,s.path,s.revision,s.source,s.rank AS nearby_turns
+        """SELECT l.id,l.story,l.ordinal,l.speaker,l.text,l.branch,l.hash,s.lang,s.path,s.revision,s.source,s.rank AS nearby_turns
         FROM (
             SELECT h.story,h.ordinal,h.rank,s.lang,s.path,s.revision,s.source
             FROM multilingual_hits h JOIN stories s ON s.id=h.story

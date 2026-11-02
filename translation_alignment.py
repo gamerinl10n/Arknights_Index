@@ -213,7 +213,7 @@ def attach_comparisons(db, items, search_lang, translation_lang):
         (row["story"], row["ordinal"]): dict(row)
         for row in db.execute(
             f"""WITH wanted(story,ordinal) AS (VALUES {values})
-            SELECT l.*,s.lang,s.path,s.revision,s.source FROM wanted w
+            SELECT l.id,l.story,l.ordinal,l.speaker,l.text,l.branch,l.hash,s.lang,s.path,s.revision,s.source FROM wanted w
             JOIN lines l ON l.story=w.story AND l.ordinal=w.ordinal
             JOIN stories s ON s.id=l.story""",
             [v for pair in wanted for v in pair],
