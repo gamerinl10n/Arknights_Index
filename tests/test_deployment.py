@@ -32,6 +32,25 @@ class DeploymentTest(unittest.TestCase):
             tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             self.assertEqual(tables,{'stories','lines','import_status','suggestion_counts','sqlite_stat1','translation_alignments'})
             self.assertNotIn('raw',[r[1] for r in db.execute('PRAGMA table_info(stories)')])
+    def test_compact_hashes_preserve_public_rows(self):
+        with closing(sqlite3.connect(self.source)) as source, closing(sqlite3.connect(self.snapshot)) as snapshot:
+            columns = 'id,story,ordinal,speaker,text,branch,hash'
+            self.assertEqual(source.execute(f'SELECT {columns} FROM lines ORDER BY story,ordinal').fetchall(), snapshot.execute(f'SELECT {columns} FROM lines ORDER BY story,ordinal').fetchall())
+            self.assertEqual(snapshot.execute('SELECT DISTINCT length(hash_bytes) FROM lines').fetchall(), [(32,)])
+        response = self.client.get('/api/search?speaker=M3').json
+        self.assertNotIn('hash_bytes', response['items'][0])
+        self.assertEqual(len(response['items'][0]['hash']), 64)
+
+    def test_invalid_hash_does_not_replace_snapshot(self):
+        before = self.snapshot.read_bytes()
+        with closing(sqlite3.connect(self.source)) as db:
+            db.execute("UPDATE lines SET hash='invalid'")
+            db.commit()
+        with self.assertRaises(ValueError):
+            export_snapshot(self.source, self.snapshot)
+        self.assertEqual(self.snapshot.read_bytes(), before)
+        self.assertFalse(self.snapshot.with_suffix('.sqlite.tmp').exists())
+
     def test_removed_admin_route_and_ui(self):
         self.assertEqual(self.client.post('/api/review',json={}).status_code,404)
         with self.client.get('/') as response:self.assertNotIn('관리자',response.text)
