@@ -41,6 +41,23 @@ async function setup(options = {}) {
   return {dom,w,calls,loadModule:moduleFor,$:id=>w.document.getElementById(id)};
 }
 function enter(x,speaker='M3',target='켈시') {x.$('speaker').value=speaker;x.$('target').value=target;x.$('search').dispatchEvent(new x.w.Event('submit',{cancelable:true}));}
+test('completion leaves IME keys alone and ArrowUp starts at the final option',async()=>{
+ const x=await setup();try {
+  await tick();await tick();const input=x.$('speaker');input.focus();
+  input.dispatchEvent(new x.w.KeyboardEvent('keydown',{key:'ArrowUp',cancelable:true}));
+  assert.equal(input.getAttribute('aria-activedescendant'),'speaker-option-1');
+  for(const key of ['Enter','Escape','ArrowDown']) {
+   const event=new x.w.KeyboardEvent('keydown',{key,isComposing:true,cancelable:true});
+   input.dispatchEvent(event);assert.equal(event.defaultPrevented,false);
+   assert.equal(input.value,'');assert.equal(x.$('speaker-options').hidden,false);
+   assert.equal(input.getAttribute('aria-activedescendant'),'speaker-option-1');
+  }
+  const legacy=new x.w.KeyboardEvent('keydown',{key:'Enter',keyCode:229,cancelable:true});
+  input.dispatchEvent(legacy);assert.equal(legacy.defaultPrevented,false);assert.equal(input.value,'');
+  input.dispatchEvent(new x.w.KeyboardEvent('keydown',{key:'Enter',cancelable:true}));
+  assert.equal(input.value,'M3');assert.equal(x.$('speaker-options').hidden,true);
+ }finally{x.dom.window.close();}
+});
 test('attached completion supports keyboard selection, search and context', async()=>{
  const x=await setup();try {
   await tick();await tick();x.$('speaker').focus();x.$('speaker').value='켈시';x.$('speaker').dispatchEvent(new x.w.Event('input'));
