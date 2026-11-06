@@ -24,6 +24,8 @@ export function createNavigation(experience) {
       try {
         viewTransition?.skipTransition();
         viewTransition = document.startViewTransition(apply);
+        // Skipping before the first frame rejects ready even when apply succeeds.
+        viewTransition.ready.catch(() => {});
         viewTransition.finished.catch(() => {});
         return;
       } catch {

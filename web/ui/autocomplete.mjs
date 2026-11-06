@@ -63,6 +63,8 @@ export function createAutocomplete() {
     input.addEventListener("focus", draw);
     input.addEventListener("blur", close);
     input.addEventListener("keydown", (event) => {
+      // IME confirmation/navigation belongs to the input method, not this list.
+      if (event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
         event.preventDefault();
         close();
@@ -73,8 +75,12 @@ export function createAutocomplete() {
         if (list.hidden) draw();
         if (!rows.length) return;
         active =
-          (active + (event.key === "ArrowDown" ? 1 : -1) + rows.length) %
-          rows.length;
+          active < 0
+            ? event.key === "ArrowDown"
+              ? 0
+              : rows.length - 1
+            : (active + (event.key === "ArrowDown" ? 1 : -1) + rows.length) %
+              rows.length;
         [...list.children].forEach((node, i) =>
           node.setAttribute("aria-selected", String(i === active)),
         );

@@ -33,3 +33,36 @@ jobs:
       - run: npm test
       - run: npm run format:check
       - run: python -m black --check app.py discovery.py core.py catalog.py search_queries.py search_service.py build.py build_portraits.py portraits.py runtime_snapshot.py scripts/benchmark.py dataset.py translation_alignment.py multilingual_search.py scripts/audit_alignment.py scripts/verify_alignment_snapshot.py
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: python -m pip install -r requirements.txt
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - name: Restore checksum-verified pinned dataset
+        run: python -c 'import dataset; assert dataset.reuse(), "Publish the pinned dataset before browser validation"'
+      - name: Validate Chromium viewports, touch and composition
+        run: npm run test:browser
+      - name: Save browser validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromium-validation
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7

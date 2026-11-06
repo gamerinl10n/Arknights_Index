@@ -41,6 +41,23 @@ async function setup(options = {}) {
   return {dom,w,calls,loadModule:moduleFor,$:id=>w.document.getElementById(id)};
 }
 function enter(x,speaker='M3',target='켈시') {x.$('speaker').value=speaker;x.$('target').value=target;x.$('search').dispatchEvent(new x.w.Event('submit',{cancelable:true}));}
+test('completion leaves IME keys alone and ArrowUp starts at the final option',async()=>{
+ const x=await setup();try {
+  await tick();await tick();const input=x.$('speaker');input.focus();
+  input.dispatchEvent(new x.w.KeyboardEvent('keydown',{key:'ArrowUp',cancelable:true}));
+  assert.equal(input.getAttribute('aria-activedescendant'),'speaker-option-1');
+  for(const key of ['Enter','Escape','ArrowDown']) {
+   const event=new x.w.KeyboardEvent('keydown',{key,isComposing:true,cancelable:true});
+   input.dispatchEvent(event);assert.equal(event.defaultPrevented,false);
+   assert.equal(input.value,'');assert.equal(x.$('speaker-options').hidden,false);
+   assert.equal(input.getAttribute('aria-activedescendant'),'speaker-option-1');
+  }
+  const legacy=new x.w.KeyboardEvent('keydown',{key:'Enter',keyCode:229,cancelable:true});
+  input.dispatchEvent(legacy);assert.equal(legacy.defaultPrevented,false);assert.equal(input.value,'');
+  input.dispatchEvent(new x.w.KeyboardEvent('keydown',{key:'Enter',cancelable:true}));
+  assert.equal(input.value,'M3');assert.equal(x.$('speaker-options').hidden,true);
+ }finally{x.dom.window.close();}
+});
 test('attached completion supports keyboard selection, search and context', async()=>{
  const x=await setup();try {
   await tick();await tick();x.$('speaker').focus();x.$('speaker').value='켈시';x.$('speaker').dispatchEvent(new x.w.Event('input'));
@@ -131,8 +148,26 @@ test('reduced motion avoids native page transitions',async()=>{
 
 test('a delayed view transition cannot undo a newer navigation',async()=>{
  const x=await setup();x.w.scrollTo=()=>{};const frames=[];
- x.w.document.startViewTransition=apply=>{frames.push(apply);return {finished:Promise.resolve(),skipTransition(){}};};
+ x.w.document.startViewTransition=apply=>{frames.push(apply);return {ready:Promise.resolve(),finished:Promise.resolve(),skipTransition(){}};};
  try{enter(x);x.$('back-search').click();frames.forEach(apply=>apply());await tick();await tick();assert.equal(x.$('search-experience').dataset.view,'home');assert.equal(x.$('results-panel').hidden,true);}finally{x.dom.window.close();}
+});
+
+test('skipped transition ready rejections are handled without undoing newer navigation',async()=>{
+ const x=await setup(),frames=[];
+ try {
+  const setView=(await x.loadModule('ui/navigation.mjs')).namespace.createNavigation(x.$('search-experience'));
+  x.w.document.startViewTransition=apply=>{
+   let rejectReady;const ready=new Promise((resolve,reject)=>{rejectReady=reject;});
+   const frame={apply,skipped:false};frames.push(frame);
+   return {ready,finished:Promise.resolve(),skipTransition(){frame.skipped=true;rejectReady(new x.w.DOMException('Transition was skipped','AbortError'));}};
+  };
+  setView('results');setView('home',false);frames[0].apply();
+  assert.equal(x.$('search-experience').dataset.view,'home');assert.equal(x.$('results-panel').hidden,true);
+  setView('results');frames[1].apply();setView('home');setView('results',false);frames[2].apply();
+  await tick();await tick();
+  assert.equal(frames.length,3);assert(frames.every(frame=>frame.skipped));
+  assert.equal(x.$('search-experience').dataset.view,'results');assert.equal(x.$('results-panel').hidden,false);
+ }finally{x.dom.window.close();}
 });
 
 test('guide opens in place, closes and returns focus without clearing a draft',async()=>{
