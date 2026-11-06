@@ -25,7 +25,7 @@ Base: `dc0110240aaad9741c3912e6ecb416c28e605ddd` (master).
 
 Using the actual English page, entered Korean `안녕` and submitted with the search button. The UI returned 850 lines and defaulted to English counterparts. The unverified Korean fallback carried an explicit notice. Enabled Korean, Chinese and Japanese display, expanded context, toggled dark mode and opened the help dialog. These interactions completed without a navigation error.
 
-## Outstanding requirements and limitations
+## Original outstanding requirements — 2026-11-03
 
 - Modified-source browser QA could not start: the managed preview service lacks Python (`sh: 1: python: not found`). Its launch also appends frontend-specific flags. No working application code was changed to compensate for this infrastructure limitation.
 - The browser API exposes no viewport/device emulation. Mobile widths, touch scrolling and software-keyboard behavior remain unverified. Desktop production observations do not establish mobile correctness or validate the local IME fix in a real input method.
@@ -47,8 +47,19 @@ Coverage:
 
 Reproduce with Python dependencies installed, `npm ci --ignore-scripts`, `npx playwright install --with-deps chromium`, `python -c 'import dataset; assert dataset.reuse()'`, then `npm run test:browser`. The job has read-only repository permissions and retains its HTML test report and failure traces/screenshots for seven days. It does not publish a dataset or deploy the application.
 
-Remaining limits and separate diagnostic:
+Remaining limits and diagnostic follow-up:
 
 - Emulation does not validate physical Android/iOS devices, mobile Safari, real Korean/Chinese/Japanese candidate windows, software-keyboard resizing or keyboard confirmation sequences. Those remain unverified; the browser tests must not be presented as real-device or real-IME QA.
-- Rapid Back→Forward before a view transition was ready produced an unhandled `AbortError: Transition was skipped. skipTransition() called`. Results remained present in the recorded run. The unchanged `web/ui/navigation.mjs` handles the transition's `finished` promise but not `ready`; this separate diagnostic was not fixed in this autocomplete/testing change. Passing UI flows wait for real animation completion before the next navigation/gesture, rather than asserting that interrupted transitions are error-free.
+- The first browser review found an unhandled `AbortError: Transition was skipped. skipTransition() called` during rapid Back→Forward navigation. The user subsequently requested a fix; the verified resolution and interrupted-navigation coverage are recorded below.
 - Story audio mapping/playback and the preview-only publication restriction remain unchanged. No merge or production promotion is covered by these checks.
+
+
+## Rapid-history cancellation fix — 2026-11-06
+
+`web/ui/navigation.mjs` now attaches a rejection handler to each native transition's `ready` promise immediately after creation. Skipping a transition before its first frame can reject `ready` even when its DOM update succeeds. Existing `finished` handling and the latest-navigation token guard remain unchanged; this does not disable animations or delay navigation.
+
+[Run 42164695123](https://github.com/gamerinl10n/Arknights_Index/actions/runs/42164695123) passed **79 Python tests, 58 JavaScript tests and 36 Chromium cases**, plus syntax/formatting checks, at `6979c32f83a9d26730bc20de796e750d26101b15`.
+
+- The deterministic unit regression failed with the previous implementation and passed with the fix. It models rejected `ready` with resolved `finished`, covering both superseding animated navigation and immediate navigation; stale callbacks cannot overwrite the latest view.
+- The added Chromium regression interrupts Back with Forward within the popstate turn, repeats this three times, and verifies native `skipTransition` calls without observing or handling `ready` from the test. All six desktop/mobile-emulated configurations passed with no page errors and preserved URL, query, result count, selected additional language, open context and rendered result content.
+- The original 30 browser cases also passed, including emulated touch scrolling and protocol-driven composition. Physical-device/software-keyboard/real-IME limits still apply. Preview-only scope is unchanged; no production promotion or merge was performed.
