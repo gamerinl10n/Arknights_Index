@@ -18,6 +18,23 @@ async function settleAnimations(page) {
     await Promise.all(document.getAnimations().map(a => a.finished.catch(() => {})));
   });
 }
+async function swipeUp(page) {
+  const cdp = await page.context().newCDPSession(page);
+  const {width, height} = page.viewportSize();
+  const x = Math.floor(width / 2), start = Math.floor(height * 0.6);
+  const distance = Math.min(250, Math.floor(height * 0.4));
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchStart', touchPoints: [{x, y: start, id: 1}],
+  });
+  for (let step = 1; step <= 10; step++) {
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove', touchPoints: [{x, y: start - distance * step / 10, id: 1}],
+    });
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+  }
+  await cdp.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
+  await cdp.detach();
+}
 async function noHorizontalOverflow(page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 }
@@ -97,6 +114,14 @@ for (const [ui, text] of [['ko', '아미야'], ['zh', '阿米娅'], ['ja', 'ア�
 }
 
 test('touch or pointer search, languages, context, dialogs, history and footer', async ({page, isMobile}) => {
+  if (isMobile) {
+    // Verify the touch driver independently before attributing failures to the app.
+    const control = await page.context().newPage();
+    await control.setContent('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><main style="height:3000px">Synthetic scroll-driver control</main>');
+    await swipeUp(control);
+    await expect.poll(() => control.evaluate(() => scrollY), {message: 'Touch driver must scroll its isolated control page'}).toBeGreaterThan(0);
+    await control.close();
+  }
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await open(page);
@@ -142,15 +167,9 @@ test('touch or pointer search, languages, context, dialogs, history and footer',
   await expect(page.locator('#results article').first()).toBeVisible();
   await settleAnimations(page);
   if (isMobile) {
-    const cdp = await page.context().newCDPSession(page);
     await page.evaluate(() => scrollTo(0, 0));
-    const {width, height} = page.viewportSize();
-    await cdp.send('Input.synthesizeScrollGesture', {
-      x: Math.floor(width / 2), y: Math.floor(height * 0.7),
-      yDistance: -250, gestureSourceType: 'touch',
-    });
+    await swipeUp(page);
     await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(0);
-    await cdp.detach();
   }
   await page.locator('footer').scrollIntoViewIfNeeded();
   await expect(page.locator('footer')).toBeVisible();
