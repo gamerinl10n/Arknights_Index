@@ -21,7 +21,7 @@ test('ArrowUp wraps to the final suggestion; composition keys cannot select or d
     await expect(list.getByRole('option')).toHaveCount(12);
     await input.press('ArrowUp');
     await expect(input).toHaveAttribute('aria-activedescendant', `${id}-option-11`);
-    const lastValue = await list.getByRole('option').last().locator('span').innerText();
+    const lastValue = await list.getByRole('option').last().locator('span:not(.portrait)').innerText();
     for (const key of ['Enter', 'Escape', 'ArrowUp', 'ArrowDown']) {
       for (const mode of ['composing', 'legacy']) {
         const result = await input.evaluate((element, {key, mode}) => {
@@ -53,7 +53,7 @@ test('ArrowUp wraps to the final suggestion; composition keys cannot select or d
 });
 
 for (const [ui, text] of [['ko', '아미야'], ['zh', '阿米娅'], ['ja', 'アーミヤ']]) {
-  test(`Chromium CDP composition and commit preserve ${ui} input`, async ({page, context}) => {
+  test(`Chromium CDP composition and blur commit preserve ${ui} input`, async ({page, context}) => {
     await open(page, ui);
     const input = page.locator('#speaker');
     await input.focus();
@@ -68,7 +68,10 @@ for (const [ui, text] of [['ko', '아미야'], ['zh', '阿米娅'], ['ja', 'ア�
     await expect(input).toHaveValue(text);
     await expect(input).not.toHaveAttribute('aria-activedescendant', /.+/);
     await expect(page.locator('#results-panel')).toBeHidden();
-    await cdp.send('Input.insertText', {text});
+    // Commit by leaving the field, as a browser does when focus moves.
+    await input.press('Tab');
+    await expect.poll(() => page.evaluate(() => window.qaComposition.some(e => e.type === 'compositionend' && e.trusted))).toBe(true);
+    await input.focus();
     await expect(input).toHaveValue(text);
     const events = await page.evaluate(() => window.qaComposition);
     expect(events.some(e => e.type === 'compositionstart' && e.trusted)).toBe(true);
@@ -91,7 +94,7 @@ test('touch or pointer search, languages, context, dialogs, history and footer',
   await noHorizontalOverflow(page);
   await activate(page.locator('#speaker'), isMobile);
   await expect(page.locator('#speaker-options')).toBeVisible();
-  const chosen = await page.locator('#speaker-option-0 span').innerText();
+  const chosen = await page.locator('#speaker-option-0 span:not(.portrait)').innerText();
   await activate(page.locator('#speaker-option-0'), isMobile);
   await expect(page.locator('#speaker')).toHaveValue(chosen);
   await expect(page.locator('#speaker-options')).toBeHidden();
