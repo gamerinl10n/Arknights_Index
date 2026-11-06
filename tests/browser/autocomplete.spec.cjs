@@ -176,3 +176,49 @@ test('touch or pointer search, languages, context, dialogs, history and footer',
   await noHorizontalOverflow(page);
   expect(errors).toEqual([]);
 });
+
+test('rapid Back/Forward cancels transitions without errors or lost search state', async ({page}) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await open(page);
+  await page.locator('#query').fill('안녕');
+  await page.locator('#submit-search').click();
+  const first = page.locator('#results article').first();
+  await expect(first).toBeVisible();
+  await page.locator('[data-translation-lang="ko_KR"]').click();
+  await first.locator('summary').click();
+  await expect(first.locator('.context-line').first()).toBeVisible();
+  await settleAnimations(page);
+  const url = page.url(), count = await page.locator('#result-count').innerText();
+  const content = await first.innerText();
+  await page.evaluate(() => {
+    window.qaSkippedTransitions = 0;
+    const start = document.startViewTransition.bind(document);
+    document.startViewTransition = (...args) => {
+      const transition = start(...args), skip = transition.skipTransition.bind(transition);
+      transition.skipTransition = () => { window.qaSkippedTransitions++; return skip(); };
+      // Do not observe ready here: that would mask an unhandled rejection in the app.
+      return transition;
+    };
+  });
+  for (let repeat = 0; repeat < 3; repeat++) {
+    // Start Forward in Back's popstate turn, before the new transition can render.
+    await page.evaluate(() => new Promise(resolve => {
+      addEventListener('popstate', () => {
+        addEventListener('popstate', () => resolve(), {once: true});
+        history.forward();
+      }, {once: true});
+      history.back();
+    }));
+  }
+  await settleAnimations(page);
+  expect(await page.evaluate(() => window.qaSkippedTransitions)).toBeGreaterThanOrEqual(3);
+  await expect(page).toHaveURL(url);
+  await expect(page.locator('#search-experience')).toHaveAttribute('data-view', 'results');
+  await expect(page.locator('#query')).toHaveValue('안녕');
+  await expect(page.locator('#result-count')).toHaveText(count);
+  await expect(page.locator('[data-translation-lang="ko_KR"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(first.locator('details')).toHaveAttribute('open', '');
+  await expect(first).toHaveText(content, {useInnerText: true});
+  expect(errors).toEqual([]);
+});

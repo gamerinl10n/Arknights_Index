@@ -148,8 +148,26 @@ test('reduced motion avoids native page transitions',async()=>{
 
 test('a delayed view transition cannot undo a newer navigation',async()=>{
  const x=await setup();x.w.scrollTo=()=>{};const frames=[];
- x.w.document.startViewTransition=apply=>{frames.push(apply);return {finished:Promise.resolve(),skipTransition(){}};};
+ x.w.document.startViewTransition=apply=>{frames.push(apply);return {ready:Promise.resolve(),finished:Promise.resolve(),skipTransition(){}};};
  try{enter(x);x.$('back-search').click();frames.forEach(apply=>apply());await tick();await tick();assert.equal(x.$('search-experience').dataset.view,'home');assert.equal(x.$('results-panel').hidden,true);}finally{x.dom.window.close();}
+});
+
+test('skipped transition ready rejections are handled without undoing newer navigation',async()=>{
+ const x=await setup(),frames=[];
+ try {
+  const setView=(await x.loadModule('ui/navigation.mjs')).namespace.createNavigation(x.$('search-experience'));
+  x.w.document.startViewTransition=apply=>{
+   let rejectReady;const ready=new Promise((resolve,reject)=>{rejectReady=reject;});
+   const frame={apply,skipped:false};frames.push(frame);
+   return {ready,finished:Promise.resolve(),skipTransition(){frame.skipped=true;rejectReady(new x.w.DOMException('Transition was skipped','AbortError'));}};
+  };
+  setView('results');setView('home',false);frames[0].apply();
+  assert.equal(x.$('search-experience').dataset.view,'home');assert.equal(x.$('results-panel').hidden,true);
+  setView('results');frames[1].apply();setView('home');setView('results',false);frames[2].apply();
+  await tick();await tick();
+  assert.equal(frames.length,3);assert(frames.every(frame=>frame.skipped));
+  assert.equal(x.$('search-experience').dataset.view,'results');assert.equal(x.$('results-panel').hidden,false);
+ }finally{x.dom.window.close();}
 });
 
 test('guide opens in place, closes and returns focus without clearing a draft',async()=>{
