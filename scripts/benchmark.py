@@ -1,6 +1,8 @@
 """Read-only local benchmark; reports timings/counts, never dialogue text."""
 
 import argparse
+import hashlib
+import tracemalloc
 from contextlib import closing
 import json
 from pathlib import Path
@@ -15,7 +17,29 @@ from core import search
 from runtime_snapshot import materialize
 
 
-def benchmark(database, rounds=15, unified=False):
+def response_fingerprint(data):
+    """Compare complete responses without persisting dialogue or query contents."""
+    return hashlib.sha256(
+        json.dumps(data, ensure_ascii=False, sort_keys=True).encode()
+    ).hexdigest()
+
+
+def profile_allocations(call):
+    """Separate untimed pass: Python allocations, not SQLite/native/RSS memory."""
+    if tracemalloc.is_tracing():
+        raise RuntimeError("Memory profiling requires an isolated tracing session")
+    tracemalloc.start()
+    try:
+        data = call()
+        _, peak = tracemalloc.get_traced_memory()
+        return data, peak
+    finally:
+        tracemalloc.stop()
+
+
+def benchmark(database, rounds=15, unified=False, profile_memory=False):
+    if rounds < 2:
+        raise ValueError("At least two rounds are required")
     path = materialize(database)
     report = {}
     with closing(
@@ -26,6 +50,7 @@ def benchmark(database, rounds=15, unified=False):
             for detailed in (True, False):
                 times = []
                 statements = []
+                fingerprints = set()
                 for _ in range(rounds):
                     seen = []
                     db.set_trace_callback(seen.append)
@@ -33,7 +58,15 @@ def benchmark(database, rounds=15, unified=False):
                     data = search(db, *args, include_details=detailed)
                     times.append((perf_counter() - start) * 1000)
                     statements.append(len(seen))
-                report[label + ("_detailed" if detailed else "_light")] = {
+                    fingerprints.add(response_fingerprint(data))
+                db.set_trace_callback(None)
+                if len(fingerprints) != 1:
+                    raise RuntimeError(
+                        "Search response changed between benchmark rounds"
+                    )
+                key = label + ("_detailed" if detailed else "_light")
+                report[key] = {
+                    "response_sha256": next(iter(fingerprints)),
                     "total": data["total"],
                     "page_items": len(data["items"]),
                     "sql_statements": max(statements),
@@ -45,6 +78,13 @@ def benchmark(database, rounds=15, unified=False):
                         sorted(times)[min(len(times) - 1, int(len(times) * 0.95))], 2
                     ),
                 }
+                if profile_memory:
+                    profiled, peak = profile_allocations(
+                        lambda: search(db, *args, include_details=detailed)
+                    )
+                    if response_fingerprint(profiled) not in fingerprints:
+                        raise RuntimeError("Profiled search response changed")
+                    report[key]["python_peak_bytes"] = peak
     client = create_app(str(path), readonly=True).test_client()
     times = []
     for _ in range(rounds):
@@ -67,22 +107,28 @@ def benchmark(database, rounds=15, unified=False):
             ("unified_next", "the", 50),
         ]:
             times = []
+            fingerprints = set()
+            params = {
+                "q": query,
+                "lang": "ko_KR",
+                "all_languages": "1",
+                "details": "0",
+                "offset": offset,
+            }
             for _ in range(rounds):
                 start = perf_counter()
                 response = client.get(
                     "/api/search",
-                    query_string={
-                        "q": query,
-                        "lang": "ko_KR",
-                        "all_languages": "1",
-                        "details": "0",
-                        "offset": offset,
-                    },
+                    query_string=params,
                 )
                 if response.status_code != 200:
                     raise RuntimeError("Unified search unavailable")
                 times.append((perf_counter() - start) * 1000)
+                fingerprints.add(response_fingerprint(response.json))
+            if len(fingerprints) != 1:
+                raise RuntimeError("Unified response changed between benchmark rounds")
             report[label] = {
+                "response_sha256": next(iter(fingerprints)),
                 "total": response.json["total"],
                 "page_items": len(response.json["items"]),
                 "response_bytes": response.calculate_content_length(),
@@ -91,6 +137,26 @@ def benchmark(database, rounds=15, unified=False):
                     sorted(times)[min(len(times) - 1, int(len(times) * 0.95))], 2
                 ),
             }
+            if profile_memory:
+                profiled, peak = profile_allocations(
+                    lambda: client.get("/api/search", query_string=params)
+                )
+                if (
+                    profiled.status_code != 200
+                    or response_fingerprint(profiled.json) not in fingerprints
+                ):
+                    raise RuntimeError("Profiled unified response changed")
+                report[label]["python_peak_bytes"] = peak
+    report["measurement"] = {
+        "rounds": rounds,
+        "database_bytes": path.stat().st_size,
+        "scope": "local; excludes network, deployment cold start and snapshot unpacking",
+        "memory": (
+            "separate untimed Python allocation peak; excludes SQLite/native memory and process RSS"
+            if profile_memory
+            else "not measured"
+        ),
+    }
     return report
 
 
@@ -103,12 +169,17 @@ if __name__ == "__main__":
         action="store_true",
         help="Also measure cross-language word searches",
     )
+    parser.add_argument(
+        "--profile-memory",
+        action="store_true",
+        help="Measure Python peak allocations in a separate untimed pass",
+    )
     args = parser.parse_args()
     if args.rounds < 2:
         parser.error("At least two rounds are required")
     print(
         json.dumps(
-            benchmark(args.database, args.rounds, args.unified),
+            benchmark(args.database, args.rounds, args.unified, args.profile_memory),
             ensure_ascii=False,
             indent=2,
         )
