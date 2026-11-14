@@ -35,7 +35,7 @@ jobs:
       - run: python -m black --check app.py discovery.py core.py catalog.py search_queries.py search_service.py build.py build_portraits.py portraits.py runtime_snapshot.py scripts/benchmark.py dataset.py translation_alignment.py multilingual_search.py scripts/audit_alignment.py scripts/verify_alignment_snapshot.py
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,8 +52,11 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium
-      - name: Restore checksum-verified pinned dataset
-        run: python -c 'import dataset; assert dataset.reuse(), "Publish the pinned dataset before browser validation"'
+      - name: Restore verified dataset or build from pinned source
+        run: python build.py
+      - name: Verify freshly built archive correspondence and snapshot integrity
+        if: ${{ hashFiles('data/build.sqlite') != '' }}
+        run: python scripts/verify_alignment_snapshot.py data/build.sqlite generated/search.sqlite --output generated/alignment-validation.json
       - name: Validate Chromium viewports, touch and composition
         run: npm run test:browser
       - name: Save browser validation evidence
