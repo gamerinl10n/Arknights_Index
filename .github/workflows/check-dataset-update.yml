@@ -61,6 +61,7 @@ jobs:
           python -c 'import json, os; from pathlib import Path; Path("dataset-source.json").write_text(json.dumps({"revision":os.environ["CANDIDATE_REVISION"]},indent=2)+"\n"); Path("data/build.sqlite").unlink(missing_ok=True)'
           python build.py --fresh-data
           python scripts/verify_alignment_snapshot.py data/build.sqlite generated/search.sqlite --output generated/alignment-validation.json
+          python scripts/audit_search_coverage.py data/build.sqlite --output generated/search-coverage.json
           python scripts/check_dataset_update.py data-baseline.sqlite generated/search.sqlite --revision "$CANDIDATE_REVISION" --output generated/update-validation.json
       - name: Open one update PR after all checks pass
         if: steps.upstream.outputs.changed == 'true' && github.event_name != 'pull_request'
@@ -102,6 +103,7 @@ jobs:
         with:
           name: dataset-update-validation
           path: |
+            generated/search-coverage.json
             generated/update-validation.json
             generated/alignment-validation.json
             update-pr-body.txt

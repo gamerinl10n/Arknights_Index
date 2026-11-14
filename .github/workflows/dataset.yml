@@ -16,6 +16,7 @@ on:
       - 'search_queries.py'
       - 'translation_alignment.py'
       - 'scripts/verify_alignment_snapshot.py'
+      - 'scripts/audit_search_coverage.py'
       - '.github/workflows/dataset.yml'
 permissions:
   contents: write
@@ -36,6 +37,13 @@ jobs:
         run: python build.py --fresh-data
       - name: Verify archived correspondence and snapshot integrity
         run: python scripts/verify_alignment_snapshot.py data/build.sqlite generated/search.sqlite --output generated/alignment-validation.json
+      - name: Audit parser and active-index coverage without dialogue output
+        run: python scripts/audit_search_coverage.py data/build.sqlite --output generated/search-coverage.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: search-coverage
+          path: generated/search-coverage.json
+          retention-days: 14
       - name: Package validated search data
         run: python dataset.py pack
       - name: Publish immutable dataset
