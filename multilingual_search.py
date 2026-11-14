@@ -185,10 +185,10 @@ def search_all(
             identities[key] = max(identities.get(key, 0), row["rank"])
         db.executemany(
             "INSERT INTO multilingual_hits VALUES(?,?,?)",
-            [
+            (
                 (story_id, ordinal, rank)
                 for (story_id, ordinal), rank in identities.items()
-            ],
+            ),
         )
     total = db.execute("SELECT count(*) FROM multilingual_hits").fetchone()[0]
     # Select the page before reading dialogue bodies; keep the final order explicit.
