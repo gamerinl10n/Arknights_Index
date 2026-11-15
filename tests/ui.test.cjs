@@ -262,7 +262,7 @@ test('tab title stays the brand through search and return',async()=>{
 });
 
 test('search uses native task-order tabbing without positive tabindex or focus traps',async()=>{
- const x=await setup();try{const controls=[...x.$('search').querySelectorAll('input,select,button')].filter(node=>node.tabIndex>=0&&!node.disabled&&!node.closest('[hidden]'));assert.deepEqual(controls.map(node=>node.id),['query','speaker','target','submit-search','reset-search','swap','spoilers']);assert.equal(x.$('search').querySelector('[tabindex]:not([tabindex="-1"])'),null);}finally{x.dom.window.close();}
+ const x=await setup();try{const controls=[...x.$('search').querySelectorAll('input,select,button')].filter(node=>node.tabIndex>=0&&!node.disabled&&!node.closest('[hidden]'));assert.deepEqual(controls.map(node=>node.id),['query','speaker','target','submit-search','reset-search','swap','third-party','spoilers']);assert.equal(x.$('search').querySelector('[tabindex]:not([tabindex="-1"])'),null);}finally{x.dom.window.close();}
 });
 
 test('search has no corpus or comparison mode controls',async()=>{
@@ -498,5 +498,51 @@ test('guide link retains fallback and modified-click navigation',async()=>{
   x.$('help-dialog').showModal=undefined;
   const event=new x.w.MouseEvent('click',{bubbles:true,cancelable:true});help.dispatchEvent(event);
   assert.equal(event.defaultPrevented,false);assert.equal(x.$('help-dialog').open,false);
+ }finally{x.dom.window.close();}
+});
+
+test('third-party controls reuse search, preserve URL/history and reset', async()=>{
+ const x=await setup();try {
+  assert.equal(x.$('interlocutor-field').hidden,true);
+  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  assert.equal(x.$('interlocutor-field').hidden,false);
+  x.$('speaker').value='켈시';x.$('target').value='Mon3tr';x.$('interlocutor').value='박사';
+  x.$('search').requestSubmit();await tick();await tick();
+  let url=new URL(x.calls.findLast(u=>u.startsWith('/api/search')),x.w.location.origin);
+  assert.equal(url.searchParams.get('mention_mode'),'third_party_candidate');
+  assert.equal(url.searchParams.get('interlocutor'),'박사');
+  assert.match(x.$('notice').textContent,/후보/);
+  assert.equal(new URL(x.w.location.href).searchParams.get('interlocutor'),'박사');
+  x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('search').requestSubmit();await tick();await tick();
+  url=new URL(x.calls.findLast(u=>u.startsWith('/api/search')),x.w.location.origin);
+  assert.equal(url.searchParams.get('mention_mode'),'all');
+  assert.equal(url.searchParams.get('interlocutor'),'');
+  x.w.history.back();await new Promise(r=>setTimeout(r,30));await tick();
+  assert.equal(x.$('third-party').checked,true);assert.equal(x.$('interlocutor').value,'박사');
+  assert.equal(x.$('interlocutor-field').hidden,false);
+  x.$('reset-search').click();
+  assert.equal(x.$('third-party').checked,false);assert.equal(x.$('interlocutor').value,'');
+  assert.equal(x.$('interlocutor-field').hidden,true);
+ }finally{x.dom.window.close();}
+});
+test('third-party mode requires speaker and target before issuing request',async()=>{
+ const x=await setup();try{
+  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('speaker').value='켈시';x.$('search').requestSubmit();await tick();
+  assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,0);
+  assert.match(x.$('query').validationMessage,/제삼자/);
+ }finally{x.dom.window.close();}
+});
+test('third-party validation rejects identical people and clears after editing',async()=>{
+ const x=await setup();try{
+  await tick();await tick();
+  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('speaker').value='M3';x.$('target').value='M3';
+  x.$('search').requestSubmit();await tick();
+  assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,0);
+  x.$('target').value='켈시';x.$('target').dispatchEvent(new x.w.Event('input'));
+  x.$('search').requestSubmit();await tick();await tick();
+  assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,1);
  }finally{x.dom.window.close();}
 });

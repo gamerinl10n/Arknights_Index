@@ -1,6 +1,7 @@
 """Bounded SQLite retrieval. Physical neighbours never establish addressees."""
 
 from catalog import aliases
+from search_relations import relation_sql, validate_mentions
 
 LANGUAGES = {"ko_KR": "kr", "zh_CN": "cn", "ja_JP": "jp", "en_US": "en"}
 
@@ -15,9 +16,12 @@ def search(
     offset=0,
     story="",
     include_details=True,
+    mention_mode="all",
+    interlocutor="",
 ):
     if lang not in LANGUAGES:
         raise ValueError("지원하지 않는 언어")
+    validate_mentions(speaker, target, mention_mode, interlocutor)
     clauses = ["s.lang=?"]
     args = [lang]
     if speaker:
@@ -35,6 +39,12 @@ def search(
         names = aliases(target, lang)
         clauses.append("(" + " OR ".join("instr(l.text,?)>0" for _ in names) + ")")
         args += names
+    rank_sql, rank_args, predicate, predicate_args = relation_sql(
+        speaker, target, lang, mention_mode, interlocutor
+    )
+    if predicate:
+        clauses.append("(" + predicate + ")")
+        args.extend(predicate_args)
     where = " AND ".join(clauses)
     facets = [
         dict(row)
@@ -68,22 +78,6 @@ def search(
         args.extend(paths)
     # Rank the complete match set before pagination, never just the visible page.
     # Nearby turns are evidence for ordering, not proof of an addressee.
-    rank_sql = "0"
-    rank_args = []
-    if speaker and target:
-        target_names = aliases(target, lang)
-        placeholders = ",".join("?" for _ in target_names)
-        turns = []
-        for comparator, direction in (("<", "DESC"), (">", "ASC")):
-            turns.append(
-                f"""COALESCE((SELECT CASE WHEN n.branch=l.branch AND n.speaker IN ({placeholders}) THEN 1 ELSE 0 END
-                FROM (SELECT speaker,branch,ordinal FROM lines WHERE story=l.story
-                AND ordinal {comparator} l.ordinal AND ordinal BETWEEN l.ordinal-60 AND l.ordinal+60
-                ORDER BY ordinal {direction} LIMIT 6) n
-                WHERE n.speaker!=l.speaker OR n.branch!=l.branch ORDER BY n.ordinal {direction} LIMIT 1),0)"""
-            )
-            rank_args.extend(target_names)
-        rank_sql = " + ".join(turns)
     rows = db.execute(
         f"SELECT l.id,l.story,l.ordinal,l.speaker,l.text,l.branch,l.hash,s.lang,s.path,s.revision,s.source,({rank_sql}) AS nearby_turns FROM lines l JOIN stories s ON s.id=l.story WHERE {where} ORDER BY nearby_turns DESC,s.path,l.ordinal LIMIT 50 OFFSET ?",
         rank_args + args + [page_offset],

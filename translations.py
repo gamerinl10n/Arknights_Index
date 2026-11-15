@@ -65,3 +65,12 @@ for _ui, _text in {
     "zh": "匹配搜索角色的姓名或已登记别名",
 }.items():
     STRINGS[_ui]["name_match"] = _text
+
+
+for lang, values in {
+    "ko": ("제삼자 언급 후보만", "주변 대화 인물 · 선택", "주변 발화를 기준으로 찾은 후보입니다. 실제 청자와 지칭은 앞뒤 문맥에서 확인하세요.", "제삼자 검색에는 서로 다른 화자와 언급 인물이 필요합니다."),
+    "en": ("Third-party mention candidates", "Surrounding speaker · optional", "Candidates based on nearby turns. Check context to establish the addressee and reference.", "Third-party search requires distinct speaker and mentioned character."),
+    "ja": ("第三者への言及候補のみ", "周辺の発言者・任意", "周辺の発言に基づく候補です。実際の聞き手と言及先は文脈で確認してください。", "異なる話し手と言及対象を指定してください。"),
+    "zh": ("仅第三方提及候选", "附近发言角色·选填", "候选基于附近发言。请结合上下文确认实际听话者和指代。", "请指定不同的说话角色和提及角色。"),
+}.items():
+    STRINGS[lang].update(zip(("third_party", "interlocutor", "mention_hint", "mention_error"), values, strict=True))

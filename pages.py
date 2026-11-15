@@ -200,3 +200,12 @@ PAGES = {
         ],
     },
 }
+
+
+PAGES["changelog"]["sections"].insert(0, {
+    "title": "제삼자 언급 후보 검색 · Third-party mention candidates",
+    "paragraphs": [
+        "기존 인물 검색에서 제삼자 언급 후보를 좁히고 주변 대화 인물을 선택할 수 있습니다. 같은 분기의 가까운 발화를 기준으로 찾으며 실제 청자나 지칭을 확정하지 않습니다. 검색 조건은 공유 주소와 기록 복귀에 보존됩니다.",
+        "Filter third-party mention candidates in the existing character search, optionally requiring a surrounding speaker. Nearby turns within the same branch provide evidence, not confirmed addressees or references. Conditions are preserved in shared URLs and browser history.",
+    ],
+})
