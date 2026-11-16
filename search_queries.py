@@ -4,6 +4,7 @@ from catalog import aliases
 from search_relations import relation_sql, validate_mentions
 
 from languages import LANGUAGES
+from search_references import prepare_references, attach_references
 
 
 def search(
@@ -22,8 +23,13 @@ def search(
     if lang not in LANGUAGES:
         raise ValueError("지원하지 않는 언어")
     validate_mentions(speaker, target, mention_mode, interlocutor)
+    references = mention_mode == "reference_candidates"
+    if references:
+        prepare_references(db, target, lang, speaker, query, spoilers, story)
     clauses = ["s.lang=?"]
-    args = [lang]
+    if references:
+        clauses.append("l.id IN (SELECT id FROM reference_hits WHERE lang=?)")
+    args = [lang, lang] if references else [lang]
     if speaker:
         names = aliases(speaker, lang)
         clauses.append("l.speaker IN (" + ",".join("?" for _ in names) + ")")
@@ -35,7 +41,7 @@ def search(
         clauses.append(
             "EXISTS(SELECT 1 FROM stories kr WHERE kr.lang='ko_KR' AND kr.path=s.path)"
         )
-    if target:
+    if target and not references:
         names = aliases(target, lang)
         clauses.append("(" + " OR ".join("instr(l.text,?)>0" for _ in names) + ")")
         args += names
@@ -59,7 +65,7 @@ def search(
     total = sum(row["count"] for row in facets if not story or row["path"] == story)
     # Unscoped word searches scan once for facets, then read only the files on this page.
     page_offset = offset
-    if not speaker:
+    if not speaker and not references:
         paths = []
         needed = 50
         for facet in facets:
@@ -104,6 +110,8 @@ def search(
             )
         ]
         results.append(item)
+    if references:
+        attach_references(db, results)
     return {"total": total, "items": results, "stories": facets}
 
 

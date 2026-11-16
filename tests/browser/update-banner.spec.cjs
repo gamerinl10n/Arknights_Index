@@ -17,7 +17,7 @@ test('missing mentioned person focuses that field while dialogue remains optiona
  await page.route('**/api/suggestions?*',route=>route.fulfill({json:[]}));
  await page.route('**/api/search?*',route=>route.fulfill({json:{total:0,items:[]}}));
  await page.goto('/?ui=ko');
- await page.locator('#speaker').fill('아미야');await page.locator('#third-party').check();
+ await page.locator('#speaker').fill('아미야');await page.locator('#third-party').selectOption('third_party_candidate');
  await page.locator('#interlocutor').fill('켈시');await page.locator('#submit-search').click();
  await expect(page.locator('#target')).toBeFocused();
  expect(await page.locator('#query').evaluate(el=>el.validationMessage)).toBe('');

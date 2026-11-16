@@ -504,7 +504,7 @@ test('guide link retains fallback and modified-click navigation',async()=>{
 test('third-party controls reuse search, preserve URL/history and reset', async()=>{
  const x=await setup();try {
   assert.equal(x.$('interlocutor-field').hidden,true);
-  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='third_party_candidate';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   assert.equal(x.$('interlocutor-field').hidden,false);
   x.$('speaker').value='켈시';x.$('target').value='Mon3tr';x.$('interlocutor').value='박사';
   x.$('search').requestSubmit();await tick();await tick();
@@ -513,22 +513,22 @@ test('third-party controls reuse search, preserve URL/history and reset', async(
   assert.equal(url.searchParams.get('interlocutor'),'박사');
   assert.match(x.$('notice').textContent,/문맥/);
   assert.equal(new URL(x.w.location.href).searchParams.get('interlocutor'),'박사');
-  x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='all';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('search').requestSubmit();await tick();await tick();
   url=new URL(x.calls.findLast(u=>u.startsWith('/api/search')),x.w.location.origin);
   assert.equal(url.searchParams.get('mention_mode'),'all');
   assert.equal(url.searchParams.get('interlocutor'),'');
   x.w.history.back();await new Promise(r=>setTimeout(r,30));await tick();
-  assert.equal(x.$('third-party').checked,true);assert.equal(x.$('interlocutor').value,'박사');
+  assert.equal(x.$('third-party').value,'third_party_candidate');assert.equal(x.$('interlocutor').value,'박사');
   assert.equal(x.$('interlocutor-field').hidden,false);
   x.$('reset-search').click();
-  assert.equal(x.$('third-party').checked,false);assert.equal(x.$('interlocutor').value,'');
+  assert.equal(x.$('third-party').value,'all');assert.equal(x.$('interlocutor').value,'');
   assert.equal(x.$('interlocutor-field').hidden,true);
  }finally{x.dom.window.close();}
 });
 test('third-party mode requires speaker and target before issuing request',async()=>{
  const x=await setup();try{
-  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='third_party_candidate';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('speaker').value='켈시';x.$('search').requestSubmit();await tick();
   assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,0);
   assert.match(x.$('target').validationMessage,/언급되는 인물/);assert.equal(x.$('query').validationMessage,'');
@@ -537,7 +537,7 @@ test('third-party mode requires speaker and target before issuing request',async
 test('third-party validation rejects identical people and clears after editing',async()=>{
  const x=await setup();try{
   await tick();await tick();
-  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='third_party_candidate';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('speaker').value='M3';x.$('target').value='M3';
   x.$('search').requestSubmit();await tick();
   assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,0);
@@ -573,7 +573,7 @@ test('empty surrounding-speaker search relaxes only that condition and restores 
  const x=await setup({search:async(url)=>new URL(url,'https://asi.test').searchParams.get('interlocutor')?{total:0,items:[]}:{total:1,items:[exampleItem]}});
  try{
   x.$('speaker').value='켈시';x.$('target').value='M3';x.$('query').value='word';
-  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='third_party_candidate';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('interlocutor').value='Doctor';x.$('search').requestSubmit();await tick();await tick();
   assert.equal(x.$('relax-interlocutor').hidden,false);
   assert.match(x.$('empty-state').textContent,/선택지/);
@@ -593,19 +593,19 @@ test('mention filter names the task and restores its compact layout state',async
   const original=x.$('target').placeholder;
   assert.equal(bottom.dataset.mentionExpanded,'false');
   assert.match(x.$('third-party').closest('label').textContent,/다른 사람에게 언급/);
-  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='third_party_candidate';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   assert.equal(bottom.dataset.mentionExpanded,'true');
   assert.match(x.$('target').placeholder,/언급되는 인물/);
   assert.match(x.$('interlocutor').placeholder,/대화 상대/);
   assert.equal(x.$('interlocutor-field').querySelector('label').classList.contains('sr-only'),true);
-  x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='all';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   assert.equal(bottom.dataset.mentionExpanded,'false');assert.equal(x.$('target').placeholder,original);
  }finally{x.dom.window.close();}
 });
 
 test('mention validation points at the missing or conflicting person, never optional dialogue',async()=>{
  const x=await setup();try{
-  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='third_party_candidate';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('speaker').value='아미야';x.$('interlocutor').value='켈시';x.$('search').requestSubmit();
   assert.match(x.$('target').validationMessage,/언급되는 인물/);assert.equal(x.$('query').validationMessage,'');
   x.$('target').value='M3';x.$('target').dispatchEvent(new x.w.Event('input'));x.$('search').requestSubmit();await tick();await tick();
@@ -613,7 +613,42 @@ test('mention validation points at the missing or conflicting person, never opti
   assert.equal(new URL(x.calls.findLast(u=>u.startsWith('/api/search')),'https://asi.test').searchParams.get('q'),'');
   x.$('target').value='아미야';x.$('search').requestSubmit();assert.notEqual(x.$('target').validationMessage,'');assert.equal(x.$('query').validationMessage,'');
   x.$('target').value='M3';x.$('interlocutor').value='아미야';x.$('search').requestSubmit();assert.notEqual(x.$('interlocutor').validationMessage,'');
-  x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('third-party').value='all';x.$('third-party').dispatchEvent(new x.w.Event('change'));
   for(const id of ['query','speaker','target','interlocutor'])assert.equal(x.$(id).validationMessage,'');
+ }finally{x.dom.window.close();}
+});
+
+test('reference mode searches a target alone, highlights expressions and shows auditable evidence without fetching contexts',async()=>{
+ const anchor={...exampleItem,ordinal:0,speaker:'아미야',text:'Synthetic target turn'};
+ const item={...exampleItem,speaker:'A',text:'저 녀석을 보라.',context:undefined,references:[{status:'candidate',basis:'nearby_turn',lang:'ko_KR',expressions:['저 녀석'],anchor}]};
+ const x=await setup({search:async()=>({total:1,items:[item]})});try{
+  x.$('third-party').value='reference_candidates';x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  assert.equal(x.$('interlocutor-field').hidden,true);assert.equal(x.$('swap').hidden,true);
+  assert.match(x.$('target').placeholder,/호칭·지칭 대상/);assert.match(x.$('speaker').placeholder,/선택/);
+  const controls=[...x.$('search').querySelectorAll('input,select,button')].filter(n=>n.tabIndex>=0&&!n.closest('[hidden]')).map(n=>n.id);
+  assert(controls.indexOf('target')<controls.indexOf('speaker'));
+  x.$('search').requestSubmit();assert.notEqual(x.$('target').validationMessage,'');assert.equal(x.$('query').validationMessage,'');
+  x.$('target').value='아미야';x.$('search').requestSubmit();await tick();await tick();
+  const url=new URL(x.calls.findLast(u=>u.startsWith('/api/search')),'https://asi.test');
+  assert.equal(url.searchParams.get('mention_mode'),'reference_candidates');assert.equal(url.searchParams.get('speaker'),'');assert.equal(url.searchParams.get('q'),'');
+  assert.match(x.$('results-title').textContent,/아미야.*호칭·지칭/);
+  assert.equal(x.$('results').querySelector('.reference-highlight').textContent,'저 녀석');
+  assert.match(x.$('results').querySelector('.reference-evidence').textContent,/지칭 표현 후보.*저 녀석.*대상 인물의 발화/s);
+  assert.equal(x.calls.filter(u=>u.startsWith('/api/context')).length,0);
+  assert.match(x.$('notice').textContent,/확정된 호칭 목록이 아닙니다/);
+  x.$('reset-search').click();assert.equal(x.$('third-party').value,'all');assert.equal(x.$('swap').hidden,false);
+ }finally{x.dom.window.close();}
+});
+
+test('reference shared URLs retain source language evidence and distinguish source-checked occurrences',async()=>{
+ const anchor={...exampleItem,ordinal:8,speaker:'???',text:'Synthetic anonymous response'};
+ const item={...exampleItem,text:'Synthetic nickname',context:undefined,references:[{status:'source_checked',basis:'portrait_response',lang:'en_US',expressions:['nickname'],anchor,source_evidence:{ordinal:7,asset:'synthetic_portrait'}}]};
+ const x=await setup({query:'search?ui=ko&target=Amiya&mention_mode=reference_candidates',search:async()=>({total:1,items:[item]})});try{
+  await tick();await tick();assert.equal(x.$('third-party').value,'reference_candidates');
+  assert.match(x.$('results').querySelector('.reference-evidence').textContent,/출처 확인 용례/);
+  x.$('results').querySelector('.reference-evidence .info-button').click();
+  assert.match(x.$('info-content').textContent,/synthetic_portrait/);assert.match(x.$('info-content').textContent,/원문 초상화 지정 행8/);
+  x.$('third-party').value='all';x.$('third-party').dispatchEvent(new x.w.Event('change'));x.$('search').requestSubmit();await tick();await tick();
+  x.w.history.back();await new Promise(r=>setTimeout(r,30));await tick();assert.equal(x.$('third-party').value,'reference_candidates');
  }finally{x.dom.window.close();}
 });

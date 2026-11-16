@@ -8,7 +8,7 @@ test('third-party filter reuses the form on desktop and touch widths', async ({p
   await page.route('**/api/search?*', route => route.fulfill({json:{total:0,items:[]}}));
   await page.goto('/?ui=en');
   await expect(page.locator('#interlocutor-field')).toBeHidden();
-  await page.locator('#third-party').check();
+  await page.locator('#third-party').selectOption('third_party_candidate');
   await expect(page.locator('#interlocutor-field')).toBeVisible();
   await expect(page.locator('#target')).toHaveAttribute('placeholder','Character mentioned (e.g. Mon3tr)');
   await expect(page.locator('#interlocutor')).toHaveAttribute('placeholder','Conversation partner · optional (e.g. Doctor)');
@@ -36,11 +36,11 @@ test('third-party filter reuses the form on desktop and touch widths', async ({p
   await expect(page.locator('#empty-state')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
   await page.reload();
-  await expect(page.locator('#third-party')).toBeChecked();
+  await expect(page.locator('#third-party')).toHaveValue('third_party_candidate');
   await expect(page.locator('#interlocutor')).toHaveValue('C');
   await page.locator('#reset-search').click();
   await expect(page.locator('#interlocutor-field')).toBeHidden();
-  await expect(page.locator('#third-party')).not.toBeChecked();
+  await expect(page.locator('#third-party')).toHaveValue('all');
 });
 
 test('choice labels and empty-context recovery preserve the original search', async ({page}) => {

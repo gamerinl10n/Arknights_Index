@@ -12,7 +12,7 @@
 <div class="search-actions"><button id="submit-search" class="primary">{{ t('search') }}</button><button type="button" id="reset-search" class="reset-search">{{ t('clear_inputs') }}</button></div>
 <select id="lang" hidden tabindex="-1" aria-hidden="true">{% for code,label in corpus_languages.items() %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select>
 <button type="button" id="swap" aria-label="{{ t('swap') }}" title="{{ t('swap') }}">⇄</button>
-<div class="search-bottom" data-mention-expanded="false"><label class="check mention-toggle"><input type="checkbox" id="third-party" aria-controls="interlocutor-field mention-hint" aria-describedby="mention-hint"> {{ t('third_party') }}</label>
+<div class="search-bottom" data-mention-expanded="false"><label class="mention-toggle"><span class="sr-only">{{ t('search_mode') }}</span><select id="third-party" aria-controls="interlocutor-field mention-hint" aria-describedby="mention-hint"><option value="all">{{ t('dialogue_mode') }}</option><option value="reference_candidates">{{ t('reference_mode') }}</option><option value="third_party_candidate">{{ t('third_party') }}</option></select></label>
 <div id="interlocutor-field" class="field autocomplete" hidden><label class="sr-only" for="interlocutor">{{ t('interlocutor') }}</label><input id="interlocutor" placeholder="{{ t('interlocutor_placeholder') }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="interlocutor-options"><div id="interlocutor-options" class="suggestions" role="listbox" hidden></div></div>
 <p id="mention-hint" hidden>{{ t('mention_hint') }}</p>
 <label class="check spoiler-toggle"><input type="checkbox" id="spoilers"> {{ t('spoilers') }}</label></div>

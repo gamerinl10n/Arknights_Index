@@ -1,0 +1,34 @@
+{
+  "source_revision": "b1031d1035e8df3042f601e33d5c1dfab8345d59",
+  "snapshot_lines": 1502513,
+  "source_link_count": 4,
+  "local_only": true,
+  "cases": [
+    {
+      "lang": "ko_KR",
+      "total_candidates": 1941,
+      "elapsed_seconds_local": 1.055,
+      "first_occurrence_status": "source_checked"
+    },
+    {
+      "lang": "zh_CN",
+      "total_candidates": 1494,
+      "elapsed_seconds_local": 0.998,
+      "first_occurrence_status": "source_checked"
+    },
+    {
+      "lang": "ja_JP",
+      "total_candidates": 1742,
+      "elapsed_seconds_local": 1.018,
+      "first_occurrence_status": "source_checked"
+    },
+    {
+      "lang": "en_US",
+      "total_candidates": 3082,
+      "elapsed_seconds_local": 1.053,
+      "first_occurrence_status": "source_checked"
+    }
+  ],
+  "query_cases_checked": 3,
+  "original_database_modified": false
+}

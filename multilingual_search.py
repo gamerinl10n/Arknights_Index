@@ -6,6 +6,7 @@ import zlib
 from catalog import aliases
 from search_relations import relation_sql, validate_mentions
 from search_queries import LANGUAGES, search
+from search_references import prepare_references, attach_references
 from translation_alignment import METHOD, TARGET_LANGS, attach_comparisons
 
 
@@ -86,15 +87,26 @@ def search_all(
         "CREATE TEMP TABLE IF NOT EXISTS multilingual_hits(story TEXT,ordinal INTEGER,rank INTEGER,PRIMARY KEY(story,ordinal)) WITHOUT ROWID"
     )
     db.execute("DELETE FROM multilingual_hits")
+    references = mention_mode == "reference_candidates"
+    if references:
+        db.execute(
+            "CREATE TEMP TABLE IF NOT EXISTS reference_origins(story TEXT,ordinal INTEGER,source_id TEXT,PRIMARY KEY(story,ordinal,source_id)) WITHOUT ROWID"
+        )
+        db.execute("DELETE FROM reference_origins")
     clauses, args = [], []
     for corpus in LANGUAGES:
+        if references:
+            prepare_references(db, target, corpus, speaker, query, spoilers, story)
         where = ["s.lang=?", "instr(l.text,?)>0"]
         values = [corpus, query]
         if speaker:
             names = aliases(speaker, corpus)
             where.append("l.speaker IN (" + ",".join("?" for _ in names) + ")")
             values.extend(names)
-        if target:
+        if references:
+            where.append("l.id IN (SELECT id FROM reference_hits WHERE lang=?)")
+            values.append(corpus)
+        if target and not references:
             names = aliases(target, corpus)
             where.append("(" + " OR ".join("instr(l.text,?)>0" for _ in names) + ")")
             values.extend(names)
@@ -112,7 +124,7 @@ def search_all(
             where.append("(" + predicate + ")")
             values.extend(predicate_args)
         clauses.append(
-            "SELECT l.story,l.ordinal,s.path,s.lang,s.revision,("
+            "SELECT l.id,l.story,l.ordinal,s.path,s.lang,s.revision,("
             + rank
             + ") AS rank FROM lines l JOIN stories s ON s.id=l.story WHERE "
             + " AND ".join(where)
@@ -179,6 +191,11 @@ def search_all(
                 else:
                     main_story, main_ordinal = metadata["zh_CN"]["id"], cn_ordinal
             key = (main_story, main_ordinal)
+            if references:
+                db.execute(
+                    "INSERT OR IGNORE INTO reference_origins VALUES(?,?,?)",
+                    (*key, row["id"]),
+                )
             identities[key] = max(identities.get(key, 0), row["rank"])
         db.executemany(
             "INSERT INTO multilingual_hits VALUES(?,?,?)",
@@ -201,6 +218,8 @@ def search_all(
     )
     items = [dict(row) for row in rows]
     variants(db, items)
+    if references:
+        attach_references(db, items, normalized=True)
     for item in items:
         item["main_language_missing"] = item["lang"] != lang
     return {"total": total, "items": items, "stories": []}

@@ -102,3 +102,28 @@ for lang, values in {
     "zh": ("台词或词语·选填", "请输入说话角色。", "请输入提及角色，如 Mon3tr。", "对话对象须与说话角色、提及角色不同。"),
 }.items():
     STRINGS[lang].update(zip(("query_placeholder", "speaker_required", "mentioned_required", "partner_distinct"), values, strict=True))
+
+# Reference research uses the same target/speaker fields and context/source UI.
+for lang, values in {
+    "ko": ("검색 방식", "대사·이름 검색", "호칭·지칭 찾기", "호칭·지칭 대상", "말하는 인물 · 선택", "누구를 어떻게 부르는지 찾을 인물을 입력하세요.", "{b}의 호칭·지칭 후보", "이름이 나온 대사와 같은 분기의 가까운 발화에서 지칭 표현을 찾습니다. 대상 연결은 추정이며, 확정된 호칭 목록이 아닙니다. 문맥을 확인하세요.", "지칭 표현 후보", "같은 대사의 이름", "가까운 대사의 이름", "가까운 대상 인물의 발화", "연결 근거 · {basis} · {n}행", "호칭·지칭 후보가 없습니다. 표현을 직접 입력하거나 대사·이름 검색으로 범위를 넓혀보세요."),
+    "en": ("Search mode", "Dialogue / names", "Find forms of reference", "Character being referred to", "Speaking character · optional", "Enter the character whose forms of reference you want to explore.", "Forms of reference to {b} · candidates", "Find expressions near names or the character's turns within the same branch. Referent links are inferred candidates, not confirmed forms of address. Check the context.", "Reference candidate", "Name in this line", "Name in a nearby line", "Nearby turn by the target", "Evidence · {basis} · line {n}", "No reference candidates. Enter a specific expression or broaden with dialogue / name search."),
+    "zh": ("搜索方式", "台词·姓名搜索", "查找称呼与指称", "被称呼或指称的角色", "说话角色·选填", "请输入想了解其称呼与指称的角色。", "{b}的称呼与指称候选", "在同一分支的姓名或目标发言附近查找指称表达。指向关系仅为推测候选，并非已确认称呼，请结合上下文判断。", "指称表达候选", "本句姓名", "附近台词的姓名", "目标角色附近的发言", "关联依据 · {basis} · 第{n}行", "没有指称候选。可输入具体表达，或使用台词·姓名搜索扩大范围。"),
+    "ja": ("検索方法", "台詞・名前検索", "呼称・指示表現を探す", "呼称・指示の対象人物", "話す人物・任意", "呼称や指示表現を調べたい人物を入力してください。", "{b}の呼称・指示表現候補", "同じ分岐内の名前や対象人物の発言に近い指示表現を探します。対象との関連は推測候補で、確定した呼称ではありません。前後の文脈を確認してください。", "指示表現候補", "同じ台詞内の名前", "近くの台詞内の名前", "対象人物の近くの発言", "関連の根拠・{basis}・{n}行目", "候補がありません。具体的な表現を入力するか、台詞・名前検索で範囲を広げてください。"),
+}.items():
+    STRINGS[lang].update(zip(("search_mode", "dialogue_mode", "reference_mode", "reference_target", "reference_speaker", "reference_required", "reference_title", "reference_hint", "reference_candidate", "same_line_name", "nearby_name", "nearby_turn", "reference_evidence", "reference_empty"), values, strict=True))
+
+for lang, values in {
+    "ko": ("출처 확인 용례", "뒤따르는 발화의 원문 초상화 지정", "호칭·지칭 표현 · 대상 연결 근거 확인 필요"),
+    "en": ("Source-checked occurrence", "Portrait identity in the following response", "Reference expression · inspect the evidence for its referent"),
+    "zh": ("已核对出处的用例", "随后发言的原文立绘身份", "称呼或指称表达·请查看对象关联依据"),
+    "ja": ("出典確認済みの用例", "続く発言の原文立ち絵指定", "呼称・指示表現・対象との関連根拠を確認してください"),
+}.items():
+    STRINGS[lang].update(zip(("reference_documented", "portrait_response", "reference_span"), values, strict=True))
+
+for lang, values in {
+    "ko": ("근거 초상화 ID", "원문 초상화 지정 행"),
+    "en": ("Evidence portrait ID", "Portrait command source line"),
+    "zh": ("依据立绘 ID", "原文立绘指定行"),
+    "ja": ("根拠の立ち絵 ID", "原文立ち絵指定行"),
+}.items():
+    STRINGS[lang].update(zip(("reference_portrait", "reference_evidence_line"), values, strict=True))

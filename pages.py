@@ -236,3 +236,11 @@ PAGES["changelog"]["sections"].insert(0, {
         "Restored text from legacy indexed choice commands to search and context and revalidated cross-language correspondence. Choices retain unknown speakers and their original provenance and branches.",
     ],
 })
+
+PAGES["changelog"]["sections"].insert(0, {
+    "title": "인물 중심 호칭·지칭 조사 · Character reference research",
+    "paragraphs": [
+        "대상 인물만 지정해 다른 인물들이 어떻게 부르거나 지칭하는지 조사할 수 있습니다. 이름을 포함한 대사 외에 같은 분기의 가까운 이름·발화에서 찾은 지칭 표현 후보를 추가하고, 원문으로 확인한 개별 용례는 구별해 표시합니다. 표현을 강조하고 연결 근거·출처와 기존 문맥 보기를 함께 제공합니다. 후보는 확정된 호칭이 아니며, 모든 생략·별명을 자동 해석하지 않습니다.",
+        "Research how others refer to a character with only the target selected. Alongside names, find reference-expression candidates near names or the target’s turns within the same branch. Individually source-checked occurrences are distinguished from automatic candidates, with highlighted expressions, evidence, provenance and existing context controls. Candidates are not confirmed forms of address or exhaustive semantic resolution.",
+    ],
+})

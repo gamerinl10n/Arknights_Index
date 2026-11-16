@@ -24,6 +24,15 @@ function infoButton(item, row = item) {
       ["source", item.source],
       ["corpus", item.lang],
     ];
+    if (item.reference_evidence) {
+      fields.push(
+        ["reference_portrait", item.reference_evidence.asset],
+        [
+          "reference_evidence_line",
+          String(item.reference_evidence.ordinal + 1),
+        ],
+      );
+    }
     if (isChoiceRow(row)) fields.push(["row_kind", t("choice_unknown")]);
     if (
       row.comparison?.method ||
@@ -121,9 +130,15 @@ function renderCard(group, needle, index, options) {
   const card = el("article", "", "result-card");
   card.lang = item.lang.replace("_", "-");
   card.style.setProperty("--enter-delay", Math.min(index, 5) * 35 + "ms");
-  if (group.some((row) => row.nearby_turns > 0))
+  if (
+    options.mention_mode !== "reference_candidates" &&
+    group.some((row) => row.nearby_turns > 0)
+  )
     card.append(el("span", t("nearby_turns"), "evidence-label"));
   for (const row of group) {
+    const referenceTerms = {};
+    for (const ref of row.references || [])
+      (referenceTerms[ref.lang] ||= []).push(...ref.expressions);
     const heading = el("div", "", "card-heading");
     heading.append(portrait(row), el("h2", speakerLabel(row)), infoButton(row));
     card.append(
@@ -135,6 +150,7 @@ function renderCard(group, needle, index, options) {
             highlightedQuote,
             infoButton,
             options.targetNames,
+            referenceTerms,
           )
         : row.comparison
           ? pairedQuote(
@@ -143,13 +159,50 @@ function renderCard(group, needle, index, options) {
               highlightedQuote,
               infoButton,
               options.targetNames,
+              referenceTerms,
             )
           : highlightedQuote(
               row.text,
               needle,
               options.targetNames?.[row.lang || item.lang],
+              referenceTerms[row.lang || item.lang],
             ),
     );
+    for (const reference of row.references || []) {
+      const evidence = el("div", "", "reference-evidence");
+      evidence.append(
+        el(
+          "span",
+          t(
+            reference.status === "source_checked"
+              ? "reference_documented"
+              : "reference_candidate",
+          ),
+          "evidence-label",
+        ),
+      );
+      evidence.append(
+        el("p", reference.expressions.join(" · "), "reference-terms"),
+      );
+      const anchor = reference.anchor;
+      evidence.append(
+        el(
+          "p",
+          t("reference_evidence", {
+            basis: t(reference.basis),
+            n: anchor.ordinal + 1,
+          }),
+        ),
+      );
+      evidence.append(
+        el("p", `${anchor.speaker || t("unnamed")}: ${anchor.text}`),
+        infoButton({
+          ...anchor,
+          reference_evidence: reference.source_evidence,
+        }),
+      );
+      card.append(evidence);
+    }
   }
 
   // Network, line DOM and event handlers are created only when a section is opened.

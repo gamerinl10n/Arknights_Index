@@ -4,8 +4,18 @@ from catalog import aliases, character_id
 
 
 def validate_mentions(speaker, target, mode, interlocutor):
-    if mode not in ("all", "third_party_candidate"):
+    if mode not in ("all", "third_party_candidate", "reference_candidates"):
         raise ValueError("Invalid mention mode")
+    if mode == "reference_candidates":
+        if not target or interlocutor:
+            raise ValueError(
+                "Reference search needs a target and no conversation-partner filter"
+            )
+        if speaker and (character_id(speaker) or speaker.casefold()) == (
+            character_id(target) or target.casefold()
+        ):
+            raise ValueError("Choose a speaker different from the target")
+        return
     if mode == "all":
         if interlocutor:
             raise ValueError("Interlocutor requires third-party mode")
@@ -31,6 +41,13 @@ def neighbour_sql(comparator, direction):
 
 def relation_sql(speaker, target, lang, mode="all", interlocutor=""):
     """Return rank SQL/args and optional candidate predicate/args."""
+    if mode == "reference_candidates":
+        return (
+            "(SELECT CASE WHEN json_extract(evidence,'$.status')='source_checked' THEN 3 WHEN json_extract(evidence,'$.basis')='same_line_name' THEN 1 ELSE 2 END FROM reference_hits WHERE id=l.id)",
+            [],
+            "",
+            [],
+        )
     if not speaker or not target:
         return "0", [], "", []
     names = aliases(target, lang)
