@@ -209,3 +209,12 @@ PAGES["changelog"]["sections"].insert(0, {
         "Filter third-party mention candidates in the existing character search, optionally requiring a surrounding speaker. Nearby turns within the same branch provide evidence, not confirmed addressees or references. Conditions are preserved in shared URLs and browser history.",
     ],
 })
+
+
+PAGES["changelog"]["sections"].insert(0, {
+    "title": "선택지 구분과 검색 조건 완화 · Choice labels and search recovery",
+    "paragraphs": [
+        "원문에서 선택지로 기록된 행은 결과·문맥·출처에서 구별해 표시합니다. 박사의 발화로 자동 판정하지 않습니다. 주변 인물을 지정한 검색 결과가 없으면 해당 조건만 풀어 다시 검색할 수 있습니다.",
+        "Choice rows are distinguished in results, context and source details without automatically attributing them to the Doctor. An empty surrounding-speaker search can remove only that condition and keep the remaining search intact.",
+    ],
+})

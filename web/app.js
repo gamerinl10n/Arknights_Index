@@ -79,6 +79,7 @@ bindSearchReset({
     $("result-count").textContent = "";
     $("notice").textContent = "";
     $("empty-state").hidden = true;
+    $("relax-interlocutor").hidden = true;
     $("more").hidden = true;
     setView("home");
   },
@@ -102,6 +103,7 @@ async function run(append = false) {
     $("more").hidden = true;
     $("result-count").textContent = "";
     $("empty-state").hidden = true;
+    $("relax-interlocutor").hidden = true;
   }
   $("notice").textContent = t("loading");
   $("search-loading").hidden = false;
@@ -137,7 +139,13 @@ async function run(append = false) {
     });
     $("notice").textContent =
       search.mention_mode === "third_party_candidate" ? t("mention_hint") : "";
-    if (!data.total) empty(t("no_results"), t("broaden"));
+    if (!data.total) {
+      const canRelax =
+        search.mention_mode === "third_party_candidate" &&
+        Boolean(search.interlocutor);
+      empty(t("no_results"), t(canRelax ? "surrounding_empty" : "broaden"));
+      $("relax-interlocutor").hidden = !canRelax;
+    }
   } catch (error) {
     if (version !== requestVersion || error.name === "AbortError") return;
     $("notice").textContent = t("failed");
@@ -154,6 +162,11 @@ async function run(append = false) {
 }
 function syncMentionMode() {
   const active = $("third-party").checked;
+  $("third-party").closest(".search-bottom").dataset.mentionExpanded =
+    String(active);
+  $("target").placeholder = t(
+    active ? "mentioned_placeholder" : "target_placeholder",
+  );
   $("interlocutor-field").hidden = !active;
   $("mention-hint").hidden = !active;
   $("query").setCustomValidity("");
@@ -260,6 +273,11 @@ for (const id of ["speaker", "target", "query", "interlocutor"])
   $(id).addEventListener("input", () => $("query").setCustomValidity(""));
 $("search").onsubmit = (event) => {
   event.preventDefault();
+  submit();
+};
+$("relax-interlocutor").onclick = () => {
+  $("interlocutor").value = "";
+  $("interlocutor").dispatchEvent(new Event("input", { bubbles: true }));
   submit();
 };
 $("more").onclick = () => run(true);

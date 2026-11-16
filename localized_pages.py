@@ -396,12 +396,20 @@ def get_page(page, ui):
 for _lang in ("ko", "en", "ja", "zh"):
     _section = {"title": tr(_lang, "third_party"), "paragraphs": [tr(_lang, "mention_hint")]}
     _instruction = {
-        "ko": "화자와 대사에서 찾을 인물을 입력한 뒤 제삼자 언급 후보만을 켜세요. 주변 대화 인물을 지정하면 같은 분기에서 그 인물의 발화가 가까운 용례로 좁힙니다. 찾을 인물의 가까운 응답이 있으면 제외하며, 다른 발화 근거가 없거나 이름이 생략된 용례는 빠질 수 있습니다. 예: 화자 켈시, 찾을 인물 Mon3tr, 주변 대화 인물 박사. 실제 검색 결과를 보장하는 예시는 아닙니다.",
-        "en": "Enter a speaker and a different character mentioned, then enable third-party candidates. Optionally enter a surrounding speaker to require a nearby turn in the same branch. Nearby replies by the mentioned character are excluded. Missing names or other-speaker evidence can omit relevant lines. Example conditions: Kal’tsit, Mon3tr, Doctor; this is not a claim that a matching official example exists.",
-        "ja": "話し手と言及対象を指定し、第三者への言及候補を有効にします。周辺の発言者を指定すると、同じ分岐でその人物の発言が近い用例に絞ります。言及対象の発言が近くにある場合は除外します。名前の省略や周辺発言の不足で漏れる場合があります。ケルシー・Mon3tr・ドクターは入力例であり、実際の用例の存在を保証しません。",
-        "zh": "输入说话角色和不同的提及角色后，开启第三方提及候选。可指定附近发言角色，要求同分支内存在其附近发言。附近出现提及角色的回应时排除。省略姓名或缺少附近其他角色发言的用例可能遗漏。凯尔希、Mon3tr、博士仅为条件示例，不保证存在对应官方用例。",
+        "ko": "화자와 대사에서 찾을 인물을 입력한 뒤 ‘다른 사람에게 언급’을 켜세요. 주변 대화 인물을 지정하면 같은 분기에서 그 인물의 발화가 가까운 용례로 좁힙니다. 찾을 인물의 가까운 응답이 있으면 제외하며, 다른 발화 근거가 없거나 이름이 생략된 용례는 빠질 수 있습니다. 예: 화자 켈시, 찾을 인물 Mon3tr, 주변 대화 인물 박사. 실제 검색 결과를 보장하는 예시는 아닙니다.",
+        "en": "Enter a speaker and a different character mentioned, then enable “Mentioned to someone else”. Optionally enter a surrounding speaker to require a nearby turn in the same branch. Nearby replies by the mentioned character are excluded. Missing names or other-speaker evidence can omit relevant lines. Example conditions: Kal’tsit, Mon3tr, Doctor; this is not a claim that a matching official example exists.",
+        "ja": "話し手と言及対象を指定し、「別の相手に言及」を有効にします。周辺の発言者を指定すると、同じ分岐でその人物の発言が近い用例に絞ります。言及対象の発言が近くにある場合は除外します。名前の省略や周辺発言の不足で漏れる場合があります。ケルシー・Mon3tr・ドクターは入力例であり、実際の用例の存在を保証しません。",
+        "zh": "输入说话角色和不同的提及角色后，开启“向其他人提及”。可指定附近发言角色，要求同分支内存在其附近发言。附近出现提及角色的回应时排除。省略姓名或缺少附近其他角色发言的用例可能遗漏。凯尔希、Mon3tr、博士仅为条件示例，不保证存在对应官方用例。",
     }[_lang]
     if _lang == "ko":
         PAGES["help"]["sections"].append({"title": _section["title"], "paragraphs": [_instruction, tr(_lang, "mention_hint")]})
     else:
         COPY[_lang]["help"].append((_section["title"], _instruction + " " + tr(_lang, "mention_hint")))
+
+
+for _lang in ("ko", "en", "ja", "zh"):
+    _title, _text = tr(_lang, "choice_unknown"), tr(_lang, "choice_hint") + " " + tr(_lang, "surrounding_empty")
+    if _lang == "ko":
+        PAGES["help"]["sections"].append({"title": _title, "paragraphs": [_text]})
+    else:
+        COPY[_lang]["help"].append((_title, _text))

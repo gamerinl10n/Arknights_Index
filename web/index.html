@@ -12,17 +12,17 @@
 <div class="search-actions"><button id="submit-search" class="primary">{{ t('search') }}</button><button type="button" id="reset-search" class="reset-search">{{ t('clear_inputs') }}</button></div>
 <select id="lang" hidden tabindex="-1" aria-hidden="true">{% for code,label in corpus_languages.items() %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select>
 <button type="button" id="swap" aria-label="{{ t('swap') }}" title="{{ t('swap') }}">⇄</button>
-<div class="search-bottom"><label class="check"><input type="checkbox" id="third-party" aria-controls="interlocutor-field" aria-describedby="mention-hint"> {{ t('third_party') }}</label>
-<div id="interlocutor-field" class="field autocomplete" hidden><label for="interlocutor">{{ t('interlocutor') }}</label><input id="interlocutor" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="interlocutor-options"><div id="interlocutor-options" class="suggestions" role="listbox" hidden></div></div>
+<div class="search-bottom" data-mention-expanded="false"><label class="check mention-toggle"><input type="checkbox" id="third-party" aria-controls="interlocutor-field mention-hint" aria-describedby="mention-hint"> {{ t('third_party') }}</label>
+<div id="interlocutor-field" class="field autocomplete" hidden><label class="sr-only" for="interlocutor">{{ t('interlocutor') }}</label><input id="interlocutor" placeholder="{{ t('interlocutor_placeholder') }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="interlocutor-options"><div id="interlocutor-options" class="suggestions" role="listbox" hidden></div></div>
 <p id="mention-hint" hidden>{{ t('mention_hint') }}</p>
-<label class="check"><input type="checkbox" id="spoilers"> {{ t('spoilers') }}</label></div>
+<label class="check spoiler-toggle"><input type="checkbox" id="spoilers"> {{ t('spoilers') }}</label></div>
 </form>
 </section>
 <section class="results-panel" id="results-panel" aria-labelledby="results-title" {% if initial_view=='home' %}hidden{% endif %}>
 <div class="results-heading"><h2 id="results-title" tabindex="-1">{{ t('results') }}</h2><div class="result-tools"><span id="result-count"></span></div></div>
 <div id="translation-languages" class="segmented translation-switch result-languages" role="group" aria-label="{{ t('translation_language') }}">{% for code,label in corpus_languages.items() %}<button type="button" data-translation-lang="{{ code }}" lang="{{ code|replace('_','-') }}" aria-pressed="false">{{ label }}</button>{% endfor %}</div>
 <p id="notice" role="status" aria-live="polite"></p>
-<div id="empty-state" class="empty-state" hidden><h3></h3><p></p></div>
+<div id="empty-state" class="empty-state" hidden><h3></h3><p></p><button type="button" id="relax-interlocutor" hidden>{{ t('relax_interlocutor') }}</button></div>
 <div id="results" aria-busy="false"></div>
 <div id="search-loading" class="search-loading" aria-hidden="true" hidden>{% for i in range(3) %}<div class="skeleton-card"><span></span><span></span><span></span></div>{% endfor %}</div>
 <button id="more" hidden>{{ t('more') }}</button>

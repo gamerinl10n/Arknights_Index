@@ -24,6 +24,7 @@ export function createResultState({
           ? ""
           : $("notice").textContent,
       empty: $("empty-state").hidden,
+      relaxHidden: $("relax-interlocutor").hidden,
       emptyTitle: $("empty-state").querySelector("h3").textContent,
       emptyDescription: $("empty-state").querySelector("p").textContent,
       more: $("more").hidden,
@@ -45,6 +46,7 @@ export function createResultState({
     $("result-count").textContent = view.count;
     $("notice").textContent = view.notice;
     $("empty-state").hidden = view.empty;
+    $("relax-interlocutor").hidden = view.relaxHidden;
     $("empty-state").querySelector("h3").textContent = view.emptyTitle;
     $("empty-state").querySelector("p").textContent = view.emptyDescription;
     $("more").hidden = view.more;

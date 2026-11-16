@@ -1,0 +1,33 @@
+{
+  "scope": "Korean-file release approximation; physical +/-30 source rows",
+  "languages": {
+    "ko_KR": {
+      "matching_lines": 104,
+      "with_choice_within_30_rows": 36,
+      "with_named_doctor_within_30_rows": 0,
+      "with_named_doctor_same_branch_within_30_rows": 0
+    },
+    "zh_CN": {
+      "matching_lines": 101,
+      "with_choice_within_30_rows": 36,
+      "with_named_doctor_within_30_rows": 0,
+      "with_named_doctor_same_branch_within_30_rows": 0
+    },
+    "ja_JP": {
+      "matching_lines": 105,
+      "with_choice_within_30_rows": 38,
+      "with_named_doctor_within_30_rows": 0,
+      "with_named_doctor_same_branch_within_30_rows": 0
+    },
+    "en_US": {
+      "matching_lines": 103,
+      "with_choice_within_30_rows": 36,
+      "with_named_doctor_within_30_rows": 0,
+      "with_named_doctor_same_branch_within_30_rows": 0
+    }
+  },
+  "source_revisions": [
+    "b1031d1035e8df3042f601e33d5c1dfab8345d59"
+  ],
+  "interpretation": "Nearby choices and named speakers are structural observations, not confirmed addressees or Doctor attribution."
+}
