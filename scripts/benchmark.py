@@ -37,7 +37,7 @@ def profile_allocations(call):
         tracemalloc.stop()
 
 
-def benchmark(database, rounds=15, unified=False, profile_memory=False):
+def benchmark(database, rounds=15, unified=False, profile_memory=False, mentions=False):
     if rounds < 2:
         raise ValueError("At least two rounds are required")
     path = materialize(database)
@@ -46,7 +46,26 @@ def benchmark(database, rounds=15, unified=False, profile_memory=False):
         sqlite3.connect(path.as_uri() + "?mode=ro&immutable=1", uri=True)
     ) as db:
         db.row_factory = sqlite3.Row
-        for label, args in [("pair_ko", ("M3", "켈시")), ("solo_ko", ("아미야",))]:
+        cases = [("pair_ko", ("M3", "켈시"), {}), ("solo_ko", ("아미야",), {})]
+        if mentions:
+            cases.extend(
+                [
+                    (
+                        "third_party_ko",
+                        ("켈시", "M3"),
+                        {"mention_mode": "third_party_candidate"},
+                    ),
+                    (
+                        "third_party_surrounding_ko",
+                        ("켈시", "M3"),
+                        {
+                            "mention_mode": "third_party_candidate",
+                            "interlocutor": "Doctor",
+                        },
+                    ),
+                ]
+            )
+        for label, args, options in cases:
             for detailed in (True, False):
                 times = []
                 statements = []
@@ -55,7 +74,7 @@ def benchmark(database, rounds=15, unified=False, profile_memory=False):
                     seen = []
                     db.set_trace_callback(seen.append)
                     start = perf_counter()
-                    data = search(db, *args, include_details=detailed)
+                    data = search(db, *args, include_details=detailed, **options)
                     times.append((perf_counter() - start) * 1000)
                     statements.append(len(seen))
                     fingerprints.add(response_fingerprint(data))
@@ -80,7 +99,7 @@ def benchmark(database, rounds=15, unified=False, profile_memory=False):
                 }
                 if profile_memory:
                     profiled, peak = profile_allocations(
-                        lambda: search(db, *args, include_details=detailed)
+                        lambda: search(db, *args, include_details=detailed, **options)
                     )
                     if response_fingerprint(profiled) not in fingerprints:
                         raise RuntimeError("Profiled search response changed")
@@ -174,12 +193,23 @@ if __name__ == "__main__":
         action="store_true",
         help="Measure Python peak allocations in a separate untimed pass",
     )
+    parser.add_argument(
+        "--mentions",
+        action="store_true",
+        help="Also measure third-party candidate searches",
+    )
     args = parser.parse_args()
     if args.rounds < 2:
         parser.error("At least two rounds are required")
     print(
         json.dumps(
-            benchmark(args.database, args.rounds, args.unified, args.profile_memory),
+            benchmark(
+                args.database,
+                args.rounds,
+                args.unified,
+                args.profile_memory,
+                args.mentions,
+            ),
             ensure_ascii=False,
             indent=2,
         )

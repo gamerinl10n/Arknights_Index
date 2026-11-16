@@ -186,3 +186,29 @@ class MentionTest(unittest.TestCase):
             )["total"],
             1,
         )
+
+    def test_two_direction_evidence_matrix_including_unknown_branches(self):
+        from itertools import product
+
+        # Independent truth table: B in either direction excludes; C is evidence.
+        for left, right, branch in product(
+            ["B", "C", "", None], ["B", "C", "", None], ["main", "other", None]
+        ):
+            # Use only string/null branch values, not character semantics.
+            self.db.execute("DELETE FROM lines")
+            self.db.execute("DELETE FROM stories")
+            self.story(
+                "matrix",
+                [
+                    (left, "reply", branch),
+                    ("A", "B mention", "main"),
+                    (right, "reply", "main"),
+                ],
+            )
+            left_valid = branch == "main"
+            expected = int(
+                not (left_valid and left == "B")
+                and right != "B"
+                and ((left_valid and left == "C") or right == "C")
+            )
+            self.assertEqual(self.find()["total"], expected, (left, right, branch))

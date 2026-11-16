@@ -3,7 +3,7 @@
 from catalog import aliases
 from search_relations import relation_sql, validate_mentions
 
-LANGUAGES = {"ko_KR": "kr", "zh_CN": "cn", "ja_JP": "jp", "en_US": "en"}
+from languages import LANGUAGES
 
 
 def search(

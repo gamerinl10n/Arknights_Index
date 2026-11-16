@@ -8,7 +8,8 @@ from pathlib import Path
 
 
 from catalog import aliases
-from search_queries import search, context_window, LANGUAGES
+from search_queries import search, context_window
+from languages import LANGUAGES
 
 
 def connect(path, ephemeral=False):

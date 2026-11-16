@@ -87,11 +87,17 @@ class DatasetTest(unittest.TestCase):
             bundle = root / "bundle.zip"
             pack(root, bundle)
             before = fingerprint(root)
-            service = root / "search_service.py"
-            service.write_text("synthetic runtime service", encoding="utf8")
-            self.assertEqual(fingerprint(root), before)
-            service.write_text("changed runtime service", encoding="utf8")
-            self.assertEqual(fingerprint(root), before)
+            for name in (
+                "search_service.py",
+                "search_queries.py",
+                "search_relations.py",
+                "multilingual_search.py",
+            ):
+                service = root / name
+                service.write_text("synthetic runtime service", encoding="utf8")
+                self.assertEqual(fingerprint(root), before)
+                service.write_text("changed runtime service", encoding="utf8")
+                self.assertEqual(fingerprint(root), before)
             data = root / "generated/search.sqlite.gz"
             data.write_bytes(b"old")
             restore(bundle, root)
@@ -108,7 +114,8 @@ class DatasetTest(unittest.TestCase):
             "dataset.py",
             "portraits.source.json",
             "requirements.txt",
-            "search_queries.py",
+            "languages.py",
+            "sync.py",
             "translation_alignment.py",
         )
         with tempfile.TemporaryDirectory() as folder:

@@ -23,13 +23,19 @@ class BenchmarkTest(unittest.TestCase):
             with closing(connect(path)) as db:
                 ingest(db, root, "synthetic", "synthetic")
             before = hashlib.sha256(path.read_bytes()).hexdigest()
-            report = benchmark(path, rounds=2, unified=True, profile_memory=True)
+            report = benchmark(
+                path, rounds=2, unified=True, profile_memory=True, mentions=True
+            )
             self.assertEqual(before, hashlib.sha256(path.read_bytes()).hexdigest())
             self.assertNotIn("PRIVATE_SYNTHETIC_SENTENCE", json.dumps(report))
             self.assertEqual(report["unified_common"]["total"], 4)
             self.assertGreater(report["unified_common"]["python_peak_bytes"], 0)
             self.assertEqual(len(report["unified_common"]["response_sha256"]), 64)
             self.assertIn("excludes SQLite", report["measurement"]["memory"])
+            self.assertEqual(len(report["third_party_ko_light"]["response_sha256"]), 64)
+            self.assertIn(
+                "python_peak_bytes", report["third_party_surrounding_ko_light"]
+            )
 
     def test_profile_cleanup_on_error_and_round_validation(self):
         import tracemalloc
