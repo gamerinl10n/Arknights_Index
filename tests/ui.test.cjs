@@ -531,7 +531,7 @@ test('third-party mode requires speaker and target before issuing request',async
   x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('speaker').value='켈시';x.$('search').requestSubmit();await tick();
   assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,0);
-  assert.match(x.$('query').validationMessage,/언급되는 인물/);
+  assert.match(x.$('target').validationMessage,/언급되는 인물/);assert.equal(x.$('query').validationMessage,'');
  }finally{x.dom.window.close();}
 });
 test('third-party validation rejects identical people and clears after editing',async()=>{
@@ -600,5 +600,20 @@ test('mention filter names the task and restores its compact layout state',async
   assert.equal(x.$('interlocutor-field').querySelector('label').classList.contains('sr-only'),true);
   x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
   assert.equal(bottom.dataset.mentionExpanded,'false');assert.equal(x.$('target').placeholder,original);
+ }finally{x.dom.window.close();}
+});
+
+test('mention validation points at the missing or conflicting person, never optional dialogue',async()=>{
+ const x=await setup();try{
+  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  x.$('speaker').value='아미야';x.$('interlocutor').value='켈시';x.$('search').requestSubmit();
+  assert.match(x.$('target').validationMessage,/언급되는 인물/);assert.equal(x.$('query').validationMessage,'');
+  x.$('target').value='M3';x.$('target').dispatchEvent(new x.w.Event('input'));x.$('search').requestSubmit();await tick();await tick();
+  assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,1);
+  assert.equal(new URL(x.calls.findLast(u=>u.startsWith('/api/search')),'https://asi.test').searchParams.get('q'),'');
+  x.$('target').value='아미야';x.$('search').requestSubmit();assert.notEqual(x.$('target').validationMessage,'');assert.equal(x.$('query').validationMessage,'');
+  x.$('target').value='M3';x.$('interlocutor').value='아미야';x.$('search').requestSubmit();assert.notEqual(x.$('interlocutor').validationMessage,'');
+  x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  for(const id of ['query','speaker','target','interlocutor'])assert.equal(x.$(id).validationMessage,'');
  }finally{x.dom.window.close();}
 });

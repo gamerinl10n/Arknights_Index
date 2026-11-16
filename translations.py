@@ -93,3 +93,12 @@ for lang, values in {
     "zh": ("向其他人提及", "对话对象·选填", "根据附近发言查找。请结合前后文确认实际对话关系。", "请分别填写不同的说话角色和提及角色。", "提及的角色（如 Mon3tr）", "对话对象·选填（如 博士）"),
 }.items():
     STRINGS[lang].update(zip(("third_party", "interlocutor", "mention_hint", "mention_error", "mentioned_placeholder", "interlocutor_placeholder"), values, strict=True))
+
+
+for lang, values in {
+    "ko": ("대사 또는 단어 · 선택", "말하는 인물을 입력하세요.", "언급되는 인물을 입력하세요. 예: Mon3tr", "대화 상대는 말하는 인물·언급되는 인물과 다르게 입력하세요."),
+    "en": ("Words or phrase · optional", "Enter the speaking character.", "Enter the character mentioned, e.g. Mon3tr.", "Use a conversation partner different from both the speaker and the mentioned character."),
+    "ja": ("台詞や単語・任意", "話し手を入力してください。", "言及される人物を入力してください。例：Mon3tr", "会話相手は話し手・言及される人物と別々に指定してください。"),
+    "zh": ("台词或词语·选填", "请输入说话角色。", "请输入提及角色，如 Mon3tr。", "对话对象须与说话角色、提及角色不同。"),
+}.items():
+    STRINGS[lang].update(zip(("query_placeholder", "speaker_required", "mentioned_required", "partner_distinct"), values, strict=True))
