@@ -50,6 +50,16 @@ def command_parts(line):
     return prop, attrs, pairs, trailing
 
 
+def decision_options(pairs):
+    """Return explicit alternatives; indexed options may contain literal semicolons."""
+    if "options" in pairs:
+        return pairs["options"].split(";")
+    indices = sorted(
+        int(key[6:]) for key in pairs if re.fullmatch(r"option[1-9][0-9]*", key)
+    )
+    return [pairs[f"option{index}"] for index in indices]
+
+
 def parse(raw):
     branch = "main"
     for n, line in enumerate(raw.splitlines()):
@@ -65,7 +75,7 @@ def parse(raw):
         speaker = pairs.get("name", "") if prop in ("name", "multiline") else ""
         if prop == "decision":
             # One source row, with separate options; do not invent a speaker.
-            text = "\n".join(pairs.get("options", "").split(";"))
+            text = "\n".join(decision_options(pairs))
         else:
             text = text or pairs.get("content", "") or pairs.get("text", "")
         if text.strip():
@@ -114,15 +124,19 @@ def ingest(db, root, revision, source):
                 for x in raw.splitlines()
             )
             path = f.relative_to(root / folder / "gamedata/story").as_posix()
-            batch.append((lang, path, raw, rows))
-    if not batch or not any(x[0] == "ko_KR" and x[3] for x in batch):
+            # Keep only validation metadata, not every raw script and parsed row.
+            # A second read is checked before writes so mutable imports stay atomic.
+            batch.append(
+                (lang, path, f, hashlib.sha256(raw.encode()).digest(), len(rows))
+            )
+    if not batch or not any(x[0] == "ko_KR" and x[4] for x in batch):
         raise ValueError("한국어 대사가 없는 입력입니다. 기존 데이터를 유지합니다.")
     old_count = db.execute("SELECT count(*) FROM lines").fetchone()[0]
     if old_count >= 100 and report["dialogue_lines"] < old_count * 0.8:
         raise ValueError("대사 수가 20% 이상 감소했습니다. 기존 데이터를 유지합니다.")
-    current_ids = {f"{lang}:{path}" for lang, path, _, _ in batch}
+    current_ids = {f"{lang}:{path}" for lang, path, _, _, _ in batch}
     previous = list(db.execute("SELECT id,lang FROM stories WHERE source=?", (source,)))
-    incoming_languages = {lang for lang, _, _, _ in batch}
+    incoming_languages = {lang for lang, _, _, _, _ in batch}
     if {
         row["lang"] for row in previous if row["id"] not in excluded
     } - incoming_languages:
@@ -138,7 +152,13 @@ def ingest(db, root, revision, source):
             ((sid,) for sid in retired | set(excluded)),
         )
         db.executemany("DELETE FROM stories WHERE id=?", ((sid,) for sid in retired))
-        for lang, path, raw, rows in batch:
+        for lang, path, filename, expected_hash, _ in batch:
+            raw = filename.read_text(encoding="utf-8-sig")
+            if hashlib.sha256(raw.encode()).digest() != expected_hash:
+                raise ValueError(
+                    "Source changed during import; existing data preserved"
+                )
+            rows = parse(raw)
             sid = f"{lang}:{path}"
             db.execute(
                 "INSERT OR REPLACE INTO stories VALUES(?,?,?,?,?,?)",
@@ -163,4 +183,4 @@ def ingest(db, root, revision, source):
             "INSERT OR REPLACE INTO import_status VALUES(1,?)",
             (json.dumps({**report, "revision": revision, "source": source}),),
         )
-    return sum(len(x[3]) for x in batch)
+    return sum(x[4] for x in batch)

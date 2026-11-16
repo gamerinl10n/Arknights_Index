@@ -1,0 +1,31 @@
+{
+  "revision": "b1031d1035e8df3042f601e33d5c1dfab8345d59",
+  "baseline_rows": 1501688,
+  "new_rows": 1502513,
+  "changed_existing_rows": 0,
+  "added_by_language": [
+    {
+      "lang": "en_US",
+      "rows": 206
+    },
+    {
+      "lang": "ja_JP",
+      "rows": 206
+    },
+    {
+      "lang": "ko_KR",
+      "rows": 206
+    },
+    {
+      "lang": "zh_CN",
+      "rows": 207
+    }
+  ],
+  "unexpected_added_rows": 0,
+  "alignment_method": "strict-command-structure-v3",
+  "alignment_issues": 0,
+  "stored_file_pairs": 6799,
+  "coverage_issues": 0,
+  "snapshot_bytes": 416464896,
+  "gzip_bytes": 142257563
+}

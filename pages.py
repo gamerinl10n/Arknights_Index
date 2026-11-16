@@ -227,3 +227,12 @@ PAGES["changelog"]["sections"].insert(0, {
         "Fixed an update notice stretching over a large area of the screen. Character validation errors now point to the relevant character field, and the dialogue field is explicitly optional.",
     ],
 })
+
+
+PAGES["changelog"]["sections"].insert(0, {
+    "title": "옛 형식 선택지 누락 복구 · Restored indexed choices",
+    "paragraphs": [
+        "번호별로 기록된 옛 형식의 선택지 본문을 검색과 문맥에 복구하고 다국어 대응을 다시 검증했습니다. 선택지는 화자 미확인 상태와 원래 출처·분기를 유지합니다.",
+        "Restored text from legacy indexed choice commands to search and context and revalidated cross-language correspondence. Choices retain unknown speakers and their original provenance and branches.",
+    ],
+})

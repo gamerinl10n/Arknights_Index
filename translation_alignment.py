@@ -3,11 +3,12 @@
 from collections import Counter
 import hashlib
 import json
+import re
 import struct
 import zlib
 from catalog import character_id
 
-METHOD = "strict-command-structure-v2"
+METHOD = "strict-command-structure-v3"
 TARGET_LANGS = ("ko_KR", "ja_JP", "en_US")
 
 
@@ -21,7 +22,15 @@ def command_structure(raw):
             command[0],
             tuple(
                 sorted(
-                    (k, v)
+                    (
+                        k,
+                        (
+                            "<localized-option>"
+                            if command[0] == "decision"
+                            and re.fullmatch(r"option[1-9][0-9]*", k)
+                            else v
+                        ),
+                    )
                     for k, v in command[2].items()
                     if not (
                         command[0] in TEXT_TAGS
@@ -40,7 +49,7 @@ def command_structure(raw):
 
 def text_slots(raw, rows):
     """Map parsed text to command positions; physical line offsets may differ."""
-    from core import command_parts
+    from core import command_parts, decision_options
 
     ordinals = {row[0] for row in rows}
     slots, choices = [], {}
@@ -52,7 +61,7 @@ def text_slots(raw, rows):
         if ordinal in ordinals:
             slots.append(index)
             if command[0] == "decision":
-                choices[index] = len(command[2].get("options", "").split(";"))
+                choices[index] = len(decision_options(command[2]))
         index += 1
     return slots, choices
 
