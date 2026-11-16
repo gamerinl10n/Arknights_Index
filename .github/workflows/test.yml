@@ -9,6 +9,21 @@ concurrency:
   group: tests-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      browser: ${{ steps.scope.outputs.browser }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: scope
+        run: python scripts/ci_scope.py
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -32,14 +47,16 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run format:check
-      - run: python -m black --check app.py discovery.py core.py catalog.py search_queries.py search_service.py build.py build_portraits.py portraits.py runtime_snapshot.py scripts/benchmark.py dataset.py translation_alignment.py multilingual_search.py scripts/audit_alignment.py scripts/verify_alignment_snapshot.py
+      - run: python -m black --check app.py discovery.py core.py catalog.py search_queries.py search_relations.py languages.py scripts/ci_scope.py search_service.py build.py build_portraits.py portraits.py runtime_snapshot.py scripts/benchmark.py dataset.py translation_alignment.py multilingual_search.py scripts/audit_alignment.py scripts/verify_alignment_snapshot.py
   browser:
+    needs: scope
+    if: ${{ always() && (needs.scope.result != 'success' || needs.scope.outputs.browser != 'false') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

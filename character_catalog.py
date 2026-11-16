@@ -2,7 +2,7 @@
 import json
 import subprocess
 from pathlib import Path
-from core import LANGUAGES
+from languages import LANGUAGES
 
 def update_catalog(root, revision, output):
     catalog = {}

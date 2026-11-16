@@ -1,0 +1,25 @@
+{
+  "database_bytes": 416022528,
+  "equal_responses": 96,
+  "measurements": [
+    {
+      "surrounding_speaker": false,
+      "total": 42,
+      "page_items": 42,
+      "response_sha256": "c30ebbed81387d7196c7780139275d166a48a2a11678ab1007a0ba903988a07f",
+      "before_median_ms": 6.151863999548368,
+      "after_median_ms": 5.648610997013748
+    },
+    {
+      "surrounding_speaker": true,
+      "total": 0,
+      "page_items": 0,
+      "response_sha256": "18bdf8b2d8acb685c338db12c287cf3bef05207c1e3a3dbf927f0fb3bc36ce69",
+      "before_median_ms": 5.741300999943633,
+      "after_median_ms": 5.158308005775325
+    }
+  ],
+  "baseline_commit": "5d3e3075a0243f0f36db2de3986cde31b5221273",
+  "rounds_per_variant": 9,
+  "scope": "local SQLite; alternating before/after; no network, cold-start or unpacking"
+}

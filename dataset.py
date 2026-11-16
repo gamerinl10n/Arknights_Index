@@ -9,7 +9,8 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 import zipfile
 
-# Runtime-only search_service.py consumes snapshots; it does not build them.
+# Hash output-producing inputs only. catalog.py remains a build dependency:
+# translation_alignment.py uses its character identity mapping.
 INPUTS = (
     "dataset-source.json",
     "core.py",
@@ -20,7 +21,8 @@ INPUTS = (
     "dataset.py",
     "portraits.source.json",
     "requirements.txt",
-    "search_queries.py",
+    "languages.py",
+    "sync.py",
     "translation_alignment.py",
 )
 RELEASES = "https://github.com/gamerinl10n/Arknights_Index/releases/download"
