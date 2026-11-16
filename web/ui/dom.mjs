@@ -12,3 +12,16 @@ export const el = (tag, text = "", className = "") => {
 };
 export const reducedMotion = () =>
   window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+// The parser records the command's physical ordinal in branch provenance.
+// Only that exact row is a choice; following dialogue inherits the branch.
+export function isChoiceRow(row) {
+  return (
+    Number.isInteger(row.ordinal) &&
+    typeof row.branch === "string" &&
+    row.branch.startsWith(`decision@${row.ordinal}:`)
+  );
+}
+export function speakerLabel(row) {
+  return row.speaker || t(isChoiceRow(row) ? "choice_unknown" : "unnamed");
+}

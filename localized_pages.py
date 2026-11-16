@@ -405,3 +405,11 @@ for _lang in ("ko", "en", "ja", "zh"):
         PAGES["help"]["sections"].append({"title": _section["title"], "paragraphs": [_instruction, tr(_lang, "mention_hint")]})
     else:
         COPY[_lang]["help"].append((_section["title"], _instruction + " " + tr(_lang, "mention_hint")))
+
+
+for _lang in ("ko", "en", "ja", "zh"):
+    _title, _text = tr(_lang, "choice_unknown"), tr(_lang, "choice_hint") + " " + tr(_lang, "surrounding_empty")
+    if _lang == "ko":
+        PAGES["help"]["sections"].append({"title": _title, "paragraphs": [_text]})
+    else:
+        COPY[_lang]["help"].append((_title, _text))

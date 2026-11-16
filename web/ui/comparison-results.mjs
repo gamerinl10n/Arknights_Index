@@ -1,4 +1,4 @@
-import { el, t } from "./dom.mjs";
+import { el, t, isChoiceRow, speakerLabel } from "./dom.mjs";
 
 const LABELS = {
   zh_CN: "中文",
@@ -21,7 +21,10 @@ export function pairedQuote(item, needle, quote, infoButton, targetNames = {}) {
     section.lang = row.lang.replace("_", "-");
     const heading = el("div", "", "paired-heading");
     const suffix =
-      row.lang === "zh_CN" ? t("original_text") : row.speaker || t("unnamed");
+      row.lang === "zh_CN"
+        ? t("original_text") +
+          (isChoiceRow(row) ? " · " + speakerLabel(row) : "")
+        : speakerLabel(row);
     heading.append(el("span", `${LABELS[row.lang]} · ${suffix}`));
     if (row !== item) heading.append(infoButton(row));
     section.append(
@@ -74,7 +77,7 @@ export function multilingualQuote(
     const heading = el("div", "", "paired-heading");
     heading.append(el("span", LABELS[lang]));
     if (row && lang !== item.lang)
-      heading.append(el("span", row.speaker || t("unnamed")), infoButton(row));
+      heading.append(el("span", speakerLabel(row)), infoButton(row));
     section.append(heading);
     if (row) section.append(quote(row.text, needle, targetNames[row.lang]));
     else section.append(el("p", t("translation_unverified"), "pair-status"));

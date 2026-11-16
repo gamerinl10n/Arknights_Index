@@ -22,7 +22,7 @@
 <div class="results-heading"><h2 id="results-title" tabindex="-1">{{ t('results') }}</h2><div class="result-tools"><span id="result-count"></span></div></div>
 <div id="translation-languages" class="segmented translation-switch result-languages" role="group" aria-label="{{ t('translation_language') }}">{% for code,label in corpus_languages.items() %}<button type="button" data-translation-lang="{{ code }}" lang="{{ code|replace('_','-') }}" aria-pressed="false">{{ label }}</button>{% endfor %}</div>
 <p id="notice" role="status" aria-live="polite"></p>
-<div id="empty-state" class="empty-state" hidden><h3></h3><p></p></div>
+<div id="empty-state" class="empty-state" hidden><h3></h3><p></p><button type="button" id="relax-interlocutor" hidden>{{ t('relax_interlocutor') }}</button></div>
 <div id="results" aria-busy="false"></div>
 <div id="search-loading" class="search-loading" aria-hidden="true" hidden>{% for i in range(3) %}<div class="skeleton-card"><span></span><span></span><span></span></div>{% endfor %}</div>
 <button id="more" hidden>{{ t('more') }}</button>

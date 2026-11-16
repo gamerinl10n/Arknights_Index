@@ -222,3 +222,5 @@ html[data-theme=dark] mark.name-highlight.query-highlight{background:#315b50}
 #interlocutor-field { flex: 1 1 14rem; min-width: 0; }
 #interlocutor-field input { width: 100%; }
 #mention-hint { flex-basis: 100%; margin: 0; font-size: .85rem; }
+
+#relax-interlocutor { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }

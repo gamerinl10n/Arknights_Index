@@ -1,4 +1,4 @@
-import { $, t, el } from "./dom.mjs";
+import { $, t, el, isChoiceRow, speakerLabel } from "./dom.mjs";
 import { api } from "./api.mjs";
 import { portrait } from "./portraits.mjs";
 import { pairedQuote, multilingualQuote } from "./comparison-results.mjs";
@@ -24,6 +24,7 @@ function infoButton(item, row = item) {
       ["source", item.source],
       ["corpus", item.lang],
     ];
+    if (isChoiceRow(row)) fields.push(["row_kind", t("choice_unknown")]);
     if (
       row.comparison?.method ||
       row.alignment_method ||
@@ -35,6 +36,7 @@ function infoButton(item, row = item) {
     $("info-content").replaceChildren(
       list,
       el("p", t("branch_hint"), "source-hint"),
+      ...(isChoiceRow(row) ? [el("p", t("choice_hint"), "source-hint")] : []),
     );
     openDialog($("info-dialog"), button);
   };
@@ -70,7 +72,7 @@ function contextRows(
     const heading = el("div", "", "context-heading");
     heading.append(
       portrait(row),
-      el("strong", row.speaker || t("unnamed")),
+      el("strong", speakerLabel(row)),
       infoButton(item, row),
     );
     line.append(
@@ -123,11 +125,7 @@ function renderCard(group, needle, index, options) {
     card.append(el("span", t("nearby_turns"), "evidence-label"));
   for (const row of group) {
     const heading = el("div", "", "card-heading");
-    heading.append(
-      portrait(row),
-      el("h2", row.speaker || t("unnamed")),
-      infoButton(row),
-    );
+    heading.append(portrait(row), el("h2", speakerLabel(row)), infoButton(row));
     card.append(
       heading,
       row.variants
