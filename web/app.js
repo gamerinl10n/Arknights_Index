@@ -162,6 +162,11 @@ async function run(append = false) {
 }
 function syncMentionMode() {
   const active = $("third-party").checked;
+  $("third-party").closest(".search-bottom").dataset.mentionExpanded =
+    String(active);
+  $("target").placeholder = t(
+    active ? "mentioned_placeholder" : "target_placeholder",
+  );
   $("interlocutor-field").hidden = !active;
   $("mention-hint").hidden = !active;
   $("query").setCustomValidity("");

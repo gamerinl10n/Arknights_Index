@@ -83,3 +83,13 @@ for lang, values in {
     "zh": ("选项·说话者未确认", "原文类型", "多个选项是不同的选择，不是连续发言，也不会自动归为博士的台词。", "移除附近发言角色条件后搜索", "未找到符合当前条件的用例。附近发言角色条件仅核对附近的明确发言，因此可能遗漏选项或较远的发言。可仅移除此条件后查看上下文。"),
 }.items():
     STRINGS[lang].update(zip(("choice_unknown", "row_kind", "choice_hint", "relax_interlocutor", "surrounding_empty"), values, strict=True))
+
+
+# Describe the user's task rather than the internal candidate classification.
+for lang, values in {
+    "ko": ("다른 사람에게 언급", "대화 상대 · 선택", "가까운 발화를 기준으로 찾습니다. 정확한 대화 관계는 앞뒤 문맥에서 확인하세요.", "말하는 인물과 언급되는 인물을 다르게 입력하세요.", "언급되는 인물 (예: Mon3tr)", "대화 상대 · 선택 (예: 박사)"),
+    "en": ("Mentioned to someone else", "Conversation partner · optional", "Matches use nearby turns. Check the surrounding context to confirm who is speaking to whom.", "Enter different speaking and mentioned characters.", "Character mentioned (e.g. Mon3tr)", "Conversation partner · optional (e.g. Doctor)"),
+    "ja": ("別の相手に言及", "会話相手・任意", "近くの発言をもとに探します。実際の会話関係は前後の文脈で確認してください。", "話し手と言及される人物は別々に指定してください。", "言及される人物（例：Mon3tr）", "会話相手・任意（例：ドクター）"),
+    "zh": ("向其他人提及", "对话对象·选填", "根据附近发言查找。请结合前后文确认实际对话关系。", "请分别填写不同的说话角色和提及角色。", "提及的角色（如 Mon3tr）", "对话对象·选填（如 博士）"),
+}.items():
+    STRINGS[lang].update(zip(("third_party", "interlocutor", "mention_hint", "mention_error", "mentioned_placeholder", "interlocutor_placeholder"), values, strict=True))

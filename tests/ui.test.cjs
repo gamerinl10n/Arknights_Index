@@ -511,7 +511,7 @@ test('third-party controls reuse search, preserve URL/history and reset', async(
   let url=new URL(x.calls.findLast(u=>u.startsWith('/api/search')),x.w.location.origin);
   assert.equal(url.searchParams.get('mention_mode'),'third_party_candidate');
   assert.equal(url.searchParams.get('interlocutor'),'박사');
-  assert.match(x.$('notice').textContent,/후보/);
+  assert.match(x.$('notice').textContent,/문맥/);
   assert.equal(new URL(x.w.location.href).searchParams.get('interlocutor'),'박사');
   x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('search').requestSubmit();await tick();await tick();
@@ -531,7 +531,7 @@ test('third-party mode requires speaker and target before issuing request',async
   x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
   x.$('speaker').value='켈시';x.$('search').requestSubmit();await tick();
   assert.equal(x.calls.filter(u=>u.startsWith('/api/search')).length,0);
-  assert.match(x.$('query').validationMessage,/제삼자/);
+  assert.match(x.$('query').validationMessage,/언급되는 인물/);
  }finally{x.dom.window.close();}
 });
 test('third-party validation rejects identical people and clears after editing',async()=>{
@@ -584,5 +584,21 @@ test('empty surrounding-speaker search relaxes only that condition and restores 
   x.w.history.back();await new Promise(r=>setTimeout(r,30));await tick();
   assert.equal(x.$('interlocutor').value,'Doctor');assert.equal(x.$('relax-interlocutor').hidden,false);
   x.$('reset-search').click();assert.equal(x.$('relax-interlocutor').hidden,true);
+ }finally{x.dom.window.close();}
+});
+
+test('mention filter names the task and restores its compact layout state',async()=>{
+ const x=await setup();try{
+  const bottom=x.$('third-party').closest('.search-bottom');
+  const original=x.$('target').placeholder;
+  assert.equal(bottom.dataset.mentionExpanded,'false');
+  assert.match(x.$('third-party').closest('label').textContent,/다른 사람에게 언급/);
+  x.$('third-party').checked=true;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  assert.equal(bottom.dataset.mentionExpanded,'true');
+  assert.match(x.$('target').placeholder,/언급되는 인물/);
+  assert.match(x.$('interlocutor').placeholder,/대화 상대/);
+  assert.equal(x.$('interlocutor-field').querySelector('label').classList.contains('sr-only'),true);
+  x.$('third-party').checked=false;x.$('third-party').dispatchEvent(new x.w.Event('change'));
+  assert.equal(bottom.dataset.mentionExpanded,'false');assert.equal(x.$('target').placeholder,original);
  }finally{x.dom.window.close();}
 });

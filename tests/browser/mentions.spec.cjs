@@ -10,6 +10,18 @@ test('third-party filter reuses the form on desktop and touch widths', async ({p
   await expect(page.locator('#interlocutor-field')).toBeHidden();
   await page.locator('#third-party').check();
   await expect(page.locator('#interlocutor-field')).toBeVisible();
+  await expect(page.locator('#target')).toHaveAttribute('placeholder','Character mentioned (e.g. Mon3tr)');
+  await expect(page.locator('#interlocutor')).toHaveAttribute('placeholder','Conversation partner · optional (e.g. Doctor)');
+  if(page.viewportSize().width > 640) {
+    const filter = await page.locator('.mention-toggle').boundingBox();
+    const spoilers = await page.locator('.spoiler-toggle').boundingBox();
+    const partner = await page.locator('#interlocutor').boundingBox();
+    const form = await page.locator('#search').boundingBox();
+    expect(Math.abs(filter.y-spoilers.y)).toBeLessThan(4);
+    expect(partner.y).toBeGreaterThan(filter.y+filter.height);
+    expect(partner.width).toBeLessThan(form.width*.6);
+  }
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
   await page.locator('#speaker').fill('A');
   await page.locator('#target').fill('B');
   await page.locator('#interlocutor').fill('C');
