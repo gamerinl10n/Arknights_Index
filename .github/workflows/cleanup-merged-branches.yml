@@ -1,0 +1,29 @@
+name: Clean merged work branches
+on:
+  pull_request:
+    types: [closed]
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/cleanup-merged-branches.yml'
+permissions:
+  contents: read
+concurrency:
+  group: merged-work-branch-cleanup
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Verify ancestry and remove unchanged merged work refs
+        run: python scripts/cleanup_merged_branches.py
+        env:
+          GH_TOKEN: ${{ github.token }}
