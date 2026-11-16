@@ -49,7 +49,10 @@ function goHome(event, focusSearch = true) {
   stopSearch();
   autocomplete.close();
   setView("home");
-  if (focusSearch) $("speaker").focus({ preventScroll: true });
+  if (focusSearch)
+    $(
+      $("third-party").value === "reference_candidates" ? "target" : "speaker",
+    ).focus({ preventScroll: true });
   else document.querySelector(".brand").focus({ preventScroll: true });
   window.scrollTo?.({
     top: 0,
@@ -126,24 +129,40 @@ async function run(append = false) {
     offset += data.items.length;
     renderedKey = searchIdentity(search);
     $("more").hidden = offset >= data.total;
-    const title = search.speaker
-      ? search.target
-        ? t("search_pair", { a: search.speaker, b: search.target })
-        : t("search_solo", { a: search.speaker })
-      : search.q
-        ? t("search_keyword", { q: search.q })
-        : t("search_mention", { b: search.target });
+    const title =
+      search.mention_mode === "reference_candidates"
+        ? t("reference_title", { b: search.target })
+        : search.speaker
+          ? search.target
+            ? t("search_pair", { a: search.speaker, b: search.target })
+            : t("search_solo", { a: search.speaker })
+          : search.q
+            ? t("search_keyword", { q: search.q })
+            : t("search_mention", { b: search.target });
     setResultTitle(title, data.participants, search);
     $("result-count").textContent = t("count", {
       n: data.total.toLocaleString(),
     });
     $("notice").textContent =
-      search.mention_mode === "third_party_candidate" ? t("mention_hint") : "";
+      search.mention_mode === "reference_candidates"
+        ? t("reference_hint")
+        : search.mention_mode === "third_party_candidate"
+          ? t("mention_hint")
+          : "";
     if (!data.total) {
       const canRelax =
         search.mention_mode === "third_party_candidate" &&
         Boolean(search.interlocutor);
-      empty(t("no_results"), t(canRelax ? "surrounding_empty" : "broaden"));
+      empty(
+        t("no_results"),
+        t(
+          search.mention_mode === "reference_candidates"
+            ? "reference_empty"
+            : canRelax
+              ? "surrounding_empty"
+              : "broaden",
+        ),
+      );
       $("relax-interlocutor").hidden = !canRelax;
     }
   } catch (error) {
@@ -169,21 +188,55 @@ function invalidField(id, key) {
   $(id).reportValidity();
 }
 function syncMentionMode() {
-  const active = $("third-party").checked;
+  const mode = $("third-party").value;
+  const active = mode === "third_party_candidate";
+  const references = mode === "reference_candidates";
+  $("search").dataset.references = String(references);
+  $("swap").hidden = references;
+  $("speaker").placeholder = t(
+    references ? "reference_speaker" : "speaker_placeholder",
+  );
+  const targetField = $("target").closest(".field");
+  const speakerField = $("speaker").closest(".field");
+  if (references) speakerField.before(targetField);
+  else speakerField.after(targetField);
   $("third-party").closest(".search-bottom").dataset.mentionExpanded =
-    String(active);
+    references ? "references" : String(active);
   $("target").placeholder = t(
-    active ? "mentioned_placeholder" : "target_placeholder",
+    references
+      ? "reference_target"
+      : active
+        ? "mentioned_placeholder"
+        : "target_placeholder",
   );
   $("interlocutor-field").hidden = !active;
-  $("mention-hint").hidden = !active;
+  $("mention-hint").hidden = !active && !references;
+  $("mention-hint").textContent = t(
+    references ? "reference_hint" : "mention_hint",
+  );
+  document.querySelector('label[for="target"]').textContent = t(
+    references ? "reference_target" : "target",
+  );
+  document.querySelector('label[for="speaker"]').textContent = t(
+    references ? "reference_speaker" : "speaker",
+  );
   clearFormErrors();
   autocomplete.close();
 }
 $("third-party").addEventListener("change", syncMentionMode);
 function submit(updateUrl = true) {
   clearFormErrors();
-  if ($("third-party").checked) {
+  if ($("third-party").value === "reference_candidates") {
+    if (!$("target").value.trim())
+      return invalidField("target", "reference_required");
+    if (
+      $("speaker").value.trim() &&
+      autocomplete.identity($("speaker").value) ===
+        autocomplete.identity($("target").value)
+    )
+      return invalidField("speaker", "mention_error");
+  }
+  if ($("third-party").value === "third_party_candidate") {
     if (!$("speaker").value.trim())
       return invalidField("speaker", "speaker_required");
     if (!$("target").value.trim())
@@ -221,9 +274,9 @@ function restore(initial = false) {
   clearFormErrors();
   const params = new URLSearchParams(location.search),
     draft = history.state?.draft || {};
-  $("third-party").checked =
-    (params.get("mention_mode") ?? draft.mention_mode) ===
-    "third_party_candidate";
+  $("third-party").value =
+    params.get("mention_mode") ?? draft.mention_mode ?? "all";
+  if (!$("third-party").value) $("third-party").value = "all";
   syncMentionMode();
   for (const key of ["speaker", "target", "interlocutor"])
     $(key).value = (params.get(key) ?? draft[key] ?? "").slice(0, 300);

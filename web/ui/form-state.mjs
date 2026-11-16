@@ -6,10 +6,11 @@ export function readForm() {
     speaker: $("speaker").value.trim(),
     target: $("target").value.trim(),
     q: $("query").value.trim(),
-    mention_mode: $("third-party")?.checked ? "third_party_candidate" : "all",
-    interlocutor: $("third-party")?.checked
-      ? $("interlocutor").value.trim()
-      : "",
+    mention_mode: $("third-party")?.value || "all",
+    interlocutor:
+      $("third-party")?.value === "third_party_candidate"
+        ? $("interlocutor").value.trim()
+        : "",
     lang: $("lang").value,
     spoilers: $("spoilers").checked ? "1" : "0",
     all_languages: "1",

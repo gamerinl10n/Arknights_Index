@@ -4,7 +4,7 @@
   "buildCommand": "python -m pip install -r requirements.txt && python build.py",
   "functions": {
     "app.py": {
-      "includeFiles": "{generated/search.sqlite.gz,generated/portraits/**,characters.json,web/**}",
+      "includeFiles": "{generated/search.sqlite.gz,generated/portraits/**,characters.json,reference-links.json,web/**}",
       "excludeFiles": "{generated/*.sqlite,data/**,node_modules/**,tests/**,docs/**,.git/**,__pycache__/**}",
       "maxDuration": 60
     }

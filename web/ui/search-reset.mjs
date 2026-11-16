@@ -12,7 +12,7 @@ export function bindSearchReset({
       $(id).value = "";
       $(id).setCustomValidity("");
     }
-    $("third-party").checked = false;
+    $("third-party").value = "all";
     $("third-party").dispatchEvent(new Event("change"));
     autocomplete.close();
     autocomplete.hydrate();

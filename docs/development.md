@@ -302,3 +302,11 @@ Decision의 options/values 형식 외에 option1/value1 등의 번호별 선택�
 전체 원본과 파싱 결과를 Python 목록에 쌓던 importer는 검증용 파일 경로·SHA-256·행 수만 보관하도록 변경했다. 검증 뒤 파일별로 다시 읽고 해시가 같은지 확인한 후 하나의 트랜잭션으로 반영한다. 읽는 사이 원문이 바뀌면 이전 파일의 쓰기까지 롤백한다. 빈 언어·누락 언어·20% 감소 차단과 과거 원문 스냅샷 보존은 유지한다. 재파싱 비용과 메모리 상주량 감소 사이의 선택이며 운영 검색 응답 시간 개선을 뜻하지 않는다.
 
 첫 전체 적재가 강제 종료되어 중단된 임시 아카이브는 별도로 보존하고 깨끗한 후보를 재구축했다. 운영 검색 DB는 교체하지 않았다. 새 후보는 총 1,502,513행이며 기존 1,501,688행의 본문·화자·분기·해시를 모두 대조해 변경이 없음을 확인했다. 새 825행은 전부 빈 화자의 번호별 Decision 원문이다(KO/JP/EN 각 206행, CN 207행). 전체 대응 6,799개 파일 쌍과 적재 범위 검증에서 issues 0개, 스냅샷 416,464,896 B로 450MiB 제한을 통과했다. [집계](indexed-choice-validation-20261116.json)는 원문 내용을 포함하지 않는다.
+
+## 호칭·지칭 후보와 출처 확인 용례
+
+API 예: `/api/search?target=아미야&mention_mode=reference_candidates&details=0&all_languages=1`. speaker와 q는 비워도 된다. 기존 all/third_party_candidate 주소는 유지한다. 폼의 검색 방식 선택을 재사용하고 지칭 조사에서는 대상→화자 순서로 배치/탭 이동하며 주변 대화 인물은 숨긴다. 기존 문맥·출처·다국어·공유 URL·복원/캐시를 그대로 사용한다. `references` 메타데이터에 method/status/expressions/basis/lang/anchor와 원문 식별값을 포함한다. 원문 확인 연결은 source_evidence의 초상화 자산과 명령 행도 제공한다. 표현 강조는 원문을 바꾸지 않고 textContent로 렌더링한다.
+
+새 연결을 추가할 때 고정 원본을 읽고 해당 발화와 장면·초상화 근거를 확인한 뒤 `reference-links.json`에 target_id,lang,path,revision,source,ordinal,line_hash,expression,anchor_ordinal,anchor_hash,evidence를 기록한다. 이름이나 가까운 발화만으로 source_checked로 올리지 않는다. 이름 충돌이나 장면의 대상이 불확실하면 후보로 남긴다. `python scripts/verify_reference_links.py data/upstream`로 원본 revision·발화 해시·초상화 명령을 검증한다. 이 검사는 의미 해석의 인간 검토를 대신하지 않는다. 덤프·DB는 커밋하지 않는다. JSON은 실행 패키지 includeFiles에만 포함되며 데이터 묶음 재발행을 유발하지 않는다.
+
+검사: `python -m unittest discover -s tests -v`, `npm test`, 문법/포맷 검사 및 `npx playwright test tests/browser/references.spec.cjs tests/browser/mentions.spec.cjs tests/browser/update-banner.spec.cjs`. 실제 데이터 검증은 합성 테스트와 구분하고 로컬 시간만 기록한다.

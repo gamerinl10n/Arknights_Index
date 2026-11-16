@@ -413,3 +413,16 @@ for _lang in ("ko", "en", "ja", "zh"):
         PAGES["help"]["sections"].append({"title": _title, "paragraphs": [_text]})
     else:
         COPY[_lang]["help"].append((_title, _text))
+
+# Target-first reference research; the previous third-party mode remains available.
+for _lang in ("ko", "en", "ja", "zh"):
+    _text = {
+        "ko": "검색 방식을 ‘호칭·지칭 찾기’로 바꾸고 대상 인물만 입력하세요. 말하는 인물과 표현은 선택 조건입니다. 이름이 없는 ‘그 아이’ 같은 표현도 같은 분기의 가까운 이름·발화를 근거로 후보에 포함합니다. ‘출처 확인 용례’는 원문 자료를 확인해 등록한 해당 행만 연결하며, ‘지칭 표현 후보’는 자동 추정입니다. 표현과 연결 근거를 보고 앞뒤 문맥·물음표에서 출처를 확인하세요. 없는 별명은 표현 칸에 직접 입력할 수 있습니다. 모든 별명이나 생략된 지칭을 자동 해석하는 기능은 아니며, 다른 사람에게 언급하는 경우도 포함합니다.",
+        "en": "Choose ‘Find forms of reference’ and enter the target character. Speaker and phrase are optional. Expressions such as ‘that girl’ can be candidates when names or the target’s turns are nearby in the same branch. Source-checked occurrences are individually linked using original evidence; reference candidates are automatic inferences. Inspect highlighted expressions, evidence, context and source details. Enter an unlisted nickname in the phrase field. This is not exhaustive semantic resolution and includes third-person mentions.",
+        "zh": "选择‘查找称呼与指称’，只需输入目标角色。说话角色及表达均为选填。同分支内附近出现姓名或目标发言时，‘那家伙’等省略姓名的表达也可能纳入候选。‘已核对出处的用例’按原文依据逐行关联；‘指称表达候选’为自动推测。请查看高亮表达、关联依据、上下文及出处。未列出的外号可直接输入表达栏。本功能并不自动解析所有指称，也包括第三人称提及。",
+        "ja": "「呼称・指示表現を探す」を選び、対象人物だけを入力します。話し手と語句は任意です。同じ分岐内の名前や対象人物の発言を根拠に「あの子」など名前のない表現も候補に含めます。出典確認済み用例は原文の根拠から個々の行を関連付け、指示表現候補は自動推測です。強調された表現・根拠・前後の文脈・出典を確認してください。未登録のあだ名は語句欄に入力できます。すべての指示対象を自動解析する機能ではなく、第三者への言及も含みます。",
+    }[_lang]
+    if _lang == "ko":
+        PAGES["help"]["sections"].insert(0, {"title": tr(_lang, "reference_mode"), "paragraphs": [_text]})
+    else:
+        COPY[_lang]["help"].insert(0, (tr(_lang, "reference_mode"), _text))

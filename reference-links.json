@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "links": [
+    {
+      "target_id": "char_002_amiya",
+      "lang": "ko_KR",
+      "path": "obt/main/level_main_05-10_beg.txt",
+      "revision": "b1031d1035e8df3042f601e33d5c1dfab8345d59",
+      "source": "ArknightsAssets/ArknightsGamedata",
+      "ordinal": 374,
+      "line_hash": "d6026be1d90d98f2d8969169e1621672e38b576111efcb1e6e2dd5759dee6db8",
+      "expression": "토끼 녀석",
+      "anchor_ordinal": 382,
+      "anchor_hash": "08908aeb22ad557441032d7a7dfd3545dc1e77a2fed8553d3f2ac3ae7e842095",
+      "evidence": {
+        "kind": "portrait_response",
+        "ordinal": 381,
+        "asset": "char_002_amiya_1#8",
+        "focus": 1
+      }
+    },
+    {
+      "target_id": "char_002_amiya",
+      "lang": "zh_CN",
+      "path": "obt/main/level_main_05-10_beg.txt",
+      "revision": "b1031d1035e8df3042f601e33d5c1dfab8345d59",
+      "source": "ArknightsAssets/ArknightsGamedata",
+      "ordinal": 374,
+      "line_hash": "54255a16cfea316317288e8ffe9d549ad45a84c9860d783b99788450722afb5a",
+      "expression": "兔子",
+      "anchor_ordinal": 382,
+      "anchor_hash": "07d15091aa6f59e79ed26804cdea5e182cde8d3abcd932c77c6c488d87d04a3b",
+      "evidence": {
+        "kind": "portrait_response",
+        "ordinal": 381,
+        "asset": "char_002_amiya_1#8",
+        "focus": 1
+      }
+    },
+    {
+      "target_id": "char_002_amiya",
+      "lang": "ja_JP",
+      "path": "obt/main/level_main_05-10_beg.txt",
+      "revision": "b1031d1035e8df3042f601e33d5c1dfab8345d59",
+      "source": "ArknightsAssets/ArknightsGamedata",
+      "ordinal": 374,
+      "line_hash": "c4c40e35e00c12200a4c41405b25fcc1240e101d8464a35d72d2705971f3c86b",
+      "expression": "ウサギめ",
+      "anchor_ordinal": 382,
+      "anchor_hash": "cc941cb6a533c3dbce532a014e9be8574c73b4fa1d8e36c0bcfb975714dd22e9",
+      "evidence": {
+        "kind": "portrait_response",
+        "ordinal": 381,
+        "asset": "char_002_amiya_1#8",
+        "focus": 1
+      }
+    },
+    {
+      "target_id": "char_002_amiya",
+      "lang": "en_US",
+      "path": "obt/main/level_main_05-10_beg.txt",
+      "revision": "b1031d1035e8df3042f601e33d5c1dfab8345d59",
+      "source": "ArknightsAssets/ArknightsGamedata",
+      "ordinal": 374,
+      "line_hash": "381500c42dc8993888107567d6ebf1b25e511f2f6156d84d25f04e3c2dca229b",
+      "expression": "The Rabbit of Rhodes Island",
+      "anchor_ordinal": 382,
+      "anchor_hash": "ad9b536b2d210874e72ff4eecf266b96c76235faaed3e273eaeddb9259f614be",
+      "evidence": {
+        "kind": "portrait_response",
+        "ordinal": 381,
+        "asset": "char_002_amiya_1#8",
+        "focus": 1
+      }
+    }
+  ]
+}
