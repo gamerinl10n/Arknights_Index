@@ -12,7 +12,10 @@
 <div class="search-actions"><button id="submit-search" class="primary">{{ t('search') }}</button><button type="button" id="reset-search" class="reset-search">{{ t('clear_inputs') }}</button></div>
 <select id="lang" hidden tabindex="-1" aria-hidden="true">{% for code,label in corpus_languages.items() %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select>
 <button type="button" id="swap" aria-label="{{ t('swap') }}" title="{{ t('swap') }}">⇄</button>
-<div class="search-bottom"><label class="check"><input type="checkbox" id="spoilers"> {{ t('spoilers') }}</label></div>
+<div class="search-bottom"><label class="check"><input type="checkbox" id="third-party" aria-controls="interlocutor-field" aria-describedby="mention-hint"> {{ t('third_party') }}</label>
+<div id="interlocutor-field" class="field autocomplete" hidden><label for="interlocutor">{{ t('interlocutor') }}</label><input id="interlocutor" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="interlocutor-options"><div id="interlocutor-options" class="suggestions" role="listbox" hidden></div></div>
+<p id="mention-hint" hidden>{{ t('mention_hint') }}</p>
+<label class="check"><input type="checkbox" id="spoilers"> {{ t('spoilers') }}</label></div>
 </form>
 </section>
 <section class="results-panel" id="results-panel" aria-labelledby="results-title" {% if initial_view=='home' %}hidden{% endif %}>

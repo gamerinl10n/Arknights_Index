@@ -262,7 +262,8 @@ def create_app(database=None, readonly=None, portrait_root=None):
         if not any(q.get(key, "").strip() for key in ("speaker", "target", "q")):
             raise ValueError("인물이나 대사 속 표현을 입력하세요.")
         if any(
-            len(q.get(key, "")) > 300 for key in ("speaker", "target", "q", "story")
+            len(q.get(key, "")) > 300
+            for key in ("speaker", "target", "q", "story", "interlocutor")
         ):
             raise ValueError("검색어가 너무 깁니다.")
         comparison = q.get("compare") == "1"
@@ -280,6 +281,8 @@ def create_app(database=None, readonly=None, portrait_root=None):
                 max(0, int(q.get("offset", 0))),
                 q.get("story", ""),
                 include_details=q.get("details") != "0",
+                mention_mode=q.get("mention_mode", "all"),
+                interlocutor=q.get("interlocutor", "").strip(),
             )
             if comparison:
                 attach_comparisons(

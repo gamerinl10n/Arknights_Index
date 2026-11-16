@@ -4,6 +4,7 @@ from itertools import groupby
 import struct
 import zlib
 from catalog import aliases
+from search_relations import relation_sql, validate_mentions
 from search_queries import LANGUAGES, search
 from translation_alignment import METHOD, TARGET_LANGS, attach_comparisons
 
@@ -55,9 +56,12 @@ def search_all(
     offset=0,
     story="",
     include_details=False,
+    mention_mode="all",
+    interlocutor="",
 ):
     if lang not in LANGUAGES:
         raise ValueError("Unsupported language")
+    validate_mentions(speaker, target, mention_mode, interlocutor)
     # Character-only searches already resolve official aliases in the main corpus.
     if not query:
         result = search(
@@ -70,6 +74,8 @@ def search_all(
             offset,
             story,
             include_details=False,
+            mention_mode=mention_mode,
+            interlocutor=interlocutor,
         )
         variants(db, result["items"])
         return result
@@ -99,21 +105,12 @@ def search_all(
         if story:
             where.append("s.path=?")
             values.append(story)
-        rank = "0"
-        rank_args = []
-        if speaker and target:
-            turns = []
-            for comparator, direction in (("<", "DESC"), (">", "ASC")):
-                marks = ",".join("?" for _ in names)
-                turns.append(
-                    f"""COALESCE((SELECT CASE WHEN n.branch=l.branch AND n.speaker IN ({marks}) THEN 1 ELSE 0 END
-                FROM (SELECT speaker,branch,ordinal FROM lines WHERE story=l.story
-                AND ordinal {comparator} l.ordinal AND ordinal BETWEEN l.ordinal-60 AND l.ordinal+60
-                ORDER BY ordinal {direction} LIMIT 6) n
-                WHERE n.speaker!=l.speaker OR n.branch!=l.branch ORDER BY n.ordinal {direction} LIMIT 1),0)"""
-                )
-                rank_args.extend(names)
-            rank = " + ".join(turns)
+        rank, rank_args, predicate, predicate_args = relation_sql(
+            speaker, target, corpus, mention_mode, interlocutor
+        )
+        if predicate:
+            where.append("(" + predicate + ")")
+            values.extend(predicate_args)
         clauses.append(
             "SELECT l.story,l.ordinal,s.path,s.lang,s.revision,("
             + rank

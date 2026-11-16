@@ -216,3 +216,9 @@ html[data-theme=dark] mark.name-highlight.query-highlight{background:#315b50}
  .modal-heading h2{overflow-wrap:anywhere;min-width:0}
 }
 @media(pointer:coarse){.info-button{width:40px;height:40px;min-width:40px;min-height:40px}.modal-close{width:44px;height:44px;min-width:44px;min-height:44px}}
+
+/* Conditional third-party controls reuse the search form and autocomplete. */
+.search-bottom { flex-wrap: wrap; }
+#interlocutor-field { flex: 1 1 14rem; min-width: 0; }
+#interlocutor-field input { width: 100%; }
+#mention-hint { flex-basis: 100%; margin: 0; font-size: .85rem; }

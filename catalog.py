@@ -5,11 +5,47 @@ import json
 from pathlib import Path
 
 
+# Explicit non-operator identities verified against named story commands.
+# Local IDs are not official operator IDs. Never infer player variables/choices.
+SUPPLEMENTAL_CHARACTERS = (
+    {
+        "id": "local:npc:doctor",
+        "names": {
+            "ko_KR": ["박사"],
+            "zh_CN": ["博士"],
+            "ja_JP": ["ドクター"],
+            "en_US": ["Doctor"],
+        },
+        "source": {
+            "repository": "ArknightsAssets/ArknightsGamedata",
+            "revision": "b1031d1035e8df3042f601e33d5c1dfab8345d59",
+            "paths": {
+                lang: folder
+                + "/gamedata/story/activities/act16mini/level_act16mini_st04.txt"
+                for lang, folder in {
+                    "ko_KR": "kr",
+                    "zh_CN": "cn",
+                    "ja_JP": "jp",
+                    "en_US": "en",
+                }.items()
+            },
+            "key": '[name="<localized name>"]',
+        },
+    },
+)
+
+
 @lru_cache(maxsize=1)
 def characters():
-    return json.loads(
+    generated = json.loads(
         (Path(__file__).parent / "characters.json").read_text(encoding="utf-8")
     )
+
+    if {row["id"] for row in generated} & {
+        row["id"] for row in SUPPLEMENTAL_CHARACTERS
+    }:
+        raise ValueError("Supplemental character ID collision")
+    return generated + list(SUPPLEMENTAL_CHARACTERS)
 
 
 @lru_cache(maxsize=1)

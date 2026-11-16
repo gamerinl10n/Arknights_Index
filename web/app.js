@@ -135,7 +135,8 @@ async function run(append = false) {
     $("result-count").textContent = t("count", {
       n: data.total.toLocaleString(),
     });
-    $("notice").textContent = "";
+    $("notice").textContent =
+      search.mention_mode === "third_party_candidate" ? t("mention_hint") : "";
     if (!data.total) empty(t("no_results"), t("broaden"));
   } catch (error) {
     if (version !== requestVersion || error.name === "AbortError") return;
@@ -151,11 +152,41 @@ async function run(append = false) {
     }
   }
 }
+function syncMentionMode() {
+  const active = $("third-party").checked;
+  $("interlocutor-field").hidden = !active;
+  $("mention-hint").hidden = !active;
+  $("query").setCustomValidity("");
+  autocomplete.close();
+}
+$("third-party").addEventListener("change", syncMentionMode);
 function submit(updateUrl = true) {
+  if (
+    $("third-party").checked &&
+    (!$("speaker").value.trim() || !$("target").value.trim())
+  ) {
+    $("query").setCustomValidity(t("mention_error"));
+    $("query").reportValidity();
+    return;
+  }
   if (!["speaker", "target", "query"].some((id) => $(id).value.trim())) {
     $("query").setCustomValidity(t("search_error"));
     $("query").reportValidity();
     return;
+  }
+  if ($("third-party").checked) {
+    const people = [
+      $("speaker").value,
+      $("target").value,
+      $("interlocutor").value,
+    ]
+      .filter((value) => value.trim())
+      .map(autocomplete.identity);
+    if (new Set(people).size !== people.length) {
+      $("query").setCustomValidity(t("mention_error"));
+      $("query").reportValidity();
+      return;
+    }
   }
   $("query").setCustomValidity("");
   autocomplete.hydrate();
@@ -180,7 +211,11 @@ function restore(initial = false) {
   $("query").setCustomValidity("");
   const params = new URLSearchParams(location.search),
     draft = history.state?.draft || {};
-  for (const key of ["speaker", "target"])
+  $("third-party").checked =
+    (params.get("mention_mode") ?? draft.mention_mode) ===
+    "third_party_candidate";
+  syncMentionMode();
+  for (const key of ["speaker", "target", "interlocutor"])
     $(key).value = (params.get(key) ?? draft[key] ?? "").slice(0, 300);
   $("query").value = (params.get("q") ?? draft.q ?? "").slice(0, 300);
   $("lang").value = { ko: "ko_KR", zh: "zh_CN", ja: "ja_JP", en: "en_US" }[
@@ -221,7 +256,7 @@ function restore(initial = false) {
     );
   }
 }
-for (const id of ["speaker", "target", "query"])
+for (const id of ["speaker", "target", "query", "interlocutor"])
   $(id).addEventListener("input", () => $("query").setCustomValidity(""));
 $("search").onsubmit = (event) => {
   event.preventDefault();

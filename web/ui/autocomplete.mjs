@@ -98,12 +98,13 @@ export function createAutocomplete() {
       close,
     };
   }
-  const completions = [completion("speaker"), completion("target")];
+  const completions = ["speaker", "target", "interlocutor"].map(completion);
   $("swap").onclick = () => {
     const a = $("speaker").value;
     $("speaker").value = $("target").value;
     $("target").value = a;
     completions.forEach((c) => c.close());
+    $("query").setCustomValidity("");
     hydrate();
   };
   async function loadSpeakers() {
@@ -136,7 +137,7 @@ export function createAutocomplete() {
     }
   }
   function hydrate() {
-    for (const id of ["speaker", "target"])
+    for (const id of ["speaker", "target", "interlocutor"])
       setInputPortrait(
         id,
         suggestions.find((row) =>
@@ -150,5 +151,10 @@ export function createAutocomplete() {
     close: () => completions.forEach((c) => c.close()),
     load: loadSpeakers,
     hydrate,
+    identity: (value) => {
+      const key = value.trim().toLocaleLowerCase();
+      const row = suggestions.find((candidate) => candidate.keys.includes(key));
+      return row?.character_id || row?.value.toLocaleLowerCase() || key;
+    },
   };
 }
