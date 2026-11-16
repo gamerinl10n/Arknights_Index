@@ -2,6 +2,10 @@
     position: fixed;
     left: 50%;
     top: 50%;
+    bottom: auto;
+    right: auto;
+    height: auto;
+    min-height: 0;
     translate: -50% -50%;
     z-index: 1700;
     display: flex;

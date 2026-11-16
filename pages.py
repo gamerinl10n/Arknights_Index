@@ -218,3 +218,12 @@ PAGES["changelog"]["sections"].insert(0, {
         "Choice rows are distinguished in results, context and source details without automatically attributing them to the Doctor. An empty surrounding-speaker search can remove only that condition and keep the remaining search intact.",
     ],
 })
+
+
+PAGES["changelog"]["sections"].insert(0, {
+    "title": "업데이트 알림·입력 오류 수정 · Update notice and validation fixes",
+    "paragraphs": [
+        "업데이트 안내가 화면의 큰 영역으로 늘어나는 문제를 수정했습니다. 인물 조건 오류는 해당 인물 칸에 표시하며, 대사 없이 인물만 검색할 수 있음을 명확히 안내합니다.",
+        "Fixed an update notice stretching over a large area of the screen. Character validation errors now point to the relevant character field, and the dialogue field is explicitly optional.",
+    ],
+})

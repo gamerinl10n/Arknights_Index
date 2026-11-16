@@ -103,6 +103,8 @@ export function createAutocomplete() {
     const a = $("speaker").value;
     $("speaker").value = $("target").value;
     $("target").value = a;
+    for (const id of ["speaker", "target"])
+      $(id).dispatchEvent(new Event("input", { bubbles: true }));
     completions.forEach((c) => c.close());
     $("query").setCustomValidity("");
     hydrate();

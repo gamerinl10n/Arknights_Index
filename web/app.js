@@ -160,6 +160,14 @@ async function run(append = false) {
     }
   }
 }
+function clearFormErrors() {
+  for (const id of ["query", "speaker", "target", "interlocutor"])
+    $(id).setCustomValidity("");
+}
+function invalidField(id, key) {
+  $(id).setCustomValidity(t(key));
+  $(id).reportValidity();
+}
 function syncMentionMode() {
   const active = $("third-party").checked;
   $("third-party").closest(".search-bottom").dataset.mentionExpanded =
@@ -169,39 +177,28 @@ function syncMentionMode() {
   );
   $("interlocutor-field").hidden = !active;
   $("mention-hint").hidden = !active;
-  $("query").setCustomValidity("");
+  clearFormErrors();
   autocomplete.close();
 }
 $("third-party").addEventListener("change", syncMentionMode);
 function submit(updateUrl = true) {
-  if (
-    $("third-party").checked &&
-    (!$("speaker").value.trim() || !$("target").value.trim())
-  ) {
-    $("query").setCustomValidity(t("mention_error"));
-    $("query").reportValidity();
-    return;
-  }
-  if (!["speaker", "target", "query"].some((id) => $(id).value.trim())) {
-    $("query").setCustomValidity(t("search_error"));
-    $("query").reportValidity();
-    return;
-  }
+  clearFormErrors();
   if ($("third-party").checked) {
-    const people = [
-      $("speaker").value,
-      $("target").value,
-      $("interlocutor").value,
-    ]
-      .filter((value) => value.trim())
-      .map(autocomplete.identity);
-    if (new Set(people).size !== people.length) {
-      $("query").setCustomValidity(t("mention_error"));
-      $("query").reportValidity();
-      return;
-    }
+    if (!$("speaker").value.trim())
+      return invalidField("speaker", "speaker_required");
+    if (!$("target").value.trim())
+      return invalidField("target", "mentioned_required");
+    const a = autocomplete.identity($("speaker").value);
+    const b = autocomplete.identity($("target").value);
+    const c = $("interlocutor").value.trim()
+      ? autocomplete.identity($("interlocutor").value)
+      : null;
+    if (a === b) return invalidField("target", "mention_error");
+    if (c !== null && (c === a || c === b))
+      return invalidField("interlocutor", "partner_distinct");
   }
-  $("query").setCustomValidity("");
+  if (!["speaker", "target", "query"].some((id) => $(id).value.trim()))
+    return invalidField("query", "search_error");
   autocomplete.hydrate();
   const draft = readForm();
   rememberResults();
@@ -221,7 +218,7 @@ function submit(updateUrl = true) {
 }
 function restore(initial = false) {
   if (!initial) rememberResults();
-  $("query").setCustomValidity("");
+  clearFormErrors();
   const params = new URLSearchParams(location.search),
     draft = history.state?.draft || {};
   $("third-party").checked =
@@ -270,7 +267,7 @@ function restore(initial = false) {
   }
 }
 for (const id of ["speaker", "target", "query", "interlocutor"])
-  $(id).addEventListener("input", () => $("query").setCustomValidity(""));
+  $(id).addEventListener("input", clearFormErrors);
 $("search").onsubmit = (event) => {
   event.preventDefault();
   submit();
